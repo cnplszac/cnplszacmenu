@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Página de Cursos</title>
+  <style>
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+    
+    .welcome-bar {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      animation: typing 2s steps(40) 1s 1 normal both;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 0;
+    }
+    
+    body {
+      background: linear-gradient(to right, #667eea, #764ba2);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .navbar {
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .navbar ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .navbar li {
+      margin-right: 20px;
+    }
+
+    .navbar li.logout {
+      margin-left: auto;
+    }
+    
+    .navbar a {
+      color: #333;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s ease, font-size 0.3s ease;
+    }
+    
+    .navbar a:hover {
+      color: #555;
+      font-size: 20px;
+    }
+    
+    .hero {
+      background-image: url(background.jpg);
+      background-size: cover;
+      background-position: center;
+      height: 500px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .hero h1 {
+      color: #fff;
+      font-size: 48px;
+      text-align: center;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    
+    .courses {
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 50px;
+      text-align: center;
+    }
+    
+    .course {
+      margin-bottom: 30px;
+      transition: transform 0.3s ease;
+    }
+    
+    .course:hover {
+      transform: scale(1.05);
+    }
+    
+    .course-img {
+      width: 200px; /* Cambia el valor según sea necesario */
+    }
+    
+    .course img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    
+    .course h2 {
+      margin-top: 20px;
+      color: #333;
+      font-size: 24px;
+    }
+    
+    .course p {
+      color: #777;
+      font-size: 16px;
+    }
+
+    .exit-button {
+      position: fixed;
+      top: 800px;
+      left: 1180px;
+      background-color: #f44336;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button class="exit-button" onclick="window.location.href='index.html'">Salir</button>
+
+  <div class="welcome-bar" style="background-color: #1a237e;">Bienvenidos</div>
+  
+  <div class="navbar">
+    <ul>
+      <li><a href="#">Inicio</a></li>
+      <li><a href="#">Cursos</a></li>
+      <li><a href="#">Promociones</a></li>
+      <li><a href="#">Contacto</a></li>
+      <li class="logout"><a href="index.html">Salir</a></li>
+    </ul>
+  </div>
+  
+  <div class="hero">
+    <h1>Invierte en tu crecimiento: Capacítate.</h1>
+  </div>
+  
+  <div class="courses">
+    <div class="course">
+      <a href="https://drive.google.com/file/d/1Ef3b0zSTIkTRcYZktLPmQNWEAlRt-OUU/view?usp=drivesdk">
+       <img src="course1.jpg" alt="Curso 1" class="course-img">
+      </a>
+      <h2>Dulcería</h2>
+      <p>Procesos de dulcería.</p>
+    </div>
+    
+    <div class="course">
+      <a href="https://www.youtube.com">
+        <img src="course2.jpg" alt="Curso 2" class="course-img">
+      </a>
+      <h2>Taquilla 2</h2>
+      <p>Procesos de Taquilla.</p>
+    </div>
+
+    <div class="course">
+      <a href="https://www.youtube.com">
+        <img src="course2.jpg" alt="Curso 2" class="course-img">
+      </a>
+      <h2>Operaciones 2</h2>
+      <p>Procesos de Operaciones.</p>
+    </div>
+  </div>
+</body>
+</html>
