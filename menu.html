@@ -181,11 +181,11 @@
     // Verificar si el usuario ha iniciado sesión
     if (!isLoggedIn()) {
         // Redireccionar al usuario a la página de inicio de sesión
-        window.location.href = "index.html";
+        window.location.href = "https://cnplszac.github.io/cinepolitos";
     }
 
     // Verificar si la página fue accedida desde "index.html"
-    if (document.referrer !== "http://yourwebsite.com/index.html") {
+    if (document.referrer !== "https://cnplszac.github.io/cinepolitos") {
         // Cerrar la ventana actual
         window.close();
     }
