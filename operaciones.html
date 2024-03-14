@@ -2,6 +2,36 @@
 <html>
 <head>
   <title>Página de Cursos</title>
+  <script>
+    // Establecer el tiempo de inactividad en segundos
+    var inactivityTimeout = 600; // 600 segundos
+
+    // Inicializar el temporizador de inactividad
+    var timeoutId;
+
+    function resetTimer() {
+      // Reiniciar el temporizador cada vez que se detecte una interacción del usuario
+      clearTimeout(timeoutId);
+      startTimer();
+    }
+
+    function startTimer() {
+      // Configurar el temporizador para cerrar la página después del tiempo de inactividad especificado
+      timeoutId = setTimeout(function() {
+        window.location.href = "index.html";
+      }, inactivityTimeout * 1000); // Convertir el tiempo de inactividad a milisegundos
+    }
+
+    // Agregar oyentes de eventos para detectar la interacción del usuario
+    document.addEventListener("mousemove", resetTimer);
+    document.addEventListener("mousedown", resetTimer);
+    document.addEventListener("keypress", resetTimer);
+    document.addEventListener("touchstart", resetTimer);
+    document.addEventListener("touchmove", resetTimer);
+
+    // Iniciar el temporizador al cargar la página
+    window.addEventListener("load", startTimer);
+  </script>
   <style>
     @keyframes typing {
       from { width: 0 }
