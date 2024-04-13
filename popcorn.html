@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Evaluación POPCORN</title>
+  <style>
+    body {
+      background-color: #000033;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .options-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    label {
+      display: inline-block;
+      padding: 10px;
+      background-color: #f9a825;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* Estilos para opciones de "SI" y "NO" */
+    label[for*="SI"], label[for*="NO"] {
+      background-color: orange;
+    }
+
+    .result {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .authenticate-button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #2196F3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .authenticate-button:hover {
+      background-color: #0b7dda;
+    }
+
+    .export-button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #2196F3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .export-button:hover {
+      background-color: #0b7dda;
+    }
+
+    .timer {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .header-image {
+      width: 20%;
+      max-width: 20%;
+      margin-bottom: 20px;
+    }
+
+    .auth-input {
+      display: block;
+      width: calc(25% - 40px);
+      margin: 0 auto 10px auto;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    /* Estilos para los campos de nombre, área y conjunto */
+    #question-container input[type="text"] {
+      width: 28%;
+      margin-bottom: 10px;
+      margin-left: 0; /* Alineación izquierda */
+    }
+
+    #auth-container {
+      text-align: center;
+    }
+
+    .auth-label {
+      width: 150px;
+      display: inline-block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      background-color: #f9a825;
+      color: #fff;
+      border-radius: 4px;
+      padding: 10px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Imagen de encabezado -->
+    <img src="cn.jpg" alt="Encabezado" class="header-image">
+
+    <h1>Evaluación POPCORN</h1>
+
+    <!-- Campo de autenticación -->
+    <div id="auth-container">
+      <label class="auth-label" for="username">Usuario:</label>
+      <input class="auth-input" type="text" id="username" required>
+      <label class="auth-label" for="password">Contraseña:</label>
+      <input class="auth-input" type="password" id="password" required>
+      <button class="authenticate-button" onclick="authenticate()">Iniciar sesión</button>
+    </div>
+
+    <!-- Campos de nombre, área y conjunto -->
+    <div style="display: none;" id="question-container">
+      <div>
+        <label class="auth-label" for="nombre">Nombre:</label>
+        <input class="auth-input" type="text" id="nombre" required>
+      </div>
+      <div>
+        <label class="auth-label" for="area">Área:</label>
+        <input class="auth-input" type="text" id="area" required>
+      </div>
+      <div>
+        <label class="auth-label" for="conjunto">Conjunto:</label>
+        <input class="auth-input" type="text" id="conjunto" required>
+      </div>
+
+      
+
+      <div id="questions-container">
+        <!-- Preguntas -->
+        <div class="question">
+            <p>¿Hubo las palomitas y refrescos solicitados en los sabores, tamaños y porciones establecidas?</p>
+            <div class="options-container">
+                <label for="question1-SI">SI<input type="radio" id="question1-SI" name="question1" value="SI"></label>
+                <label for="question1-NO">NO<input type="radio" id="question1-NO" name="question1" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿Las palomitas se sirvieron directamente de la palomera?</p>
+            <div class="options-container">
+                <label for="question2-SI">SI<input type="radio" id="question2-SI" name="question2" value="SI"></label>
+                <label for="question2-NO">NO<input type="radio" id="question2-NO" name="question2" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿Funciona correctamente la Palomera, Olla/Filtros, Warmer, Puertas, Limpieza, Estado equipo, Manejo (Capacitación/Conocimiento)?</p>
+            <div class="options-container">
+                <label for="question3-1-SI">SI<input type="radio" id="question3-1-SI" name="question3-1" value="SI"></label>
+                <label for="question3-1-NO">NO<input type="radio" id="question3-1-NO" name="question3-1" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿Se cumplen características de las Palomitas,Tamaño, Temperatura, Sabor, Textura, Receta, Medidas?</p>
+            <div class="options-container">
+                <label for="question4-1-SI">SI<input type="radio" id="question4-1-SI" name="question4-1" value="SI"></label>
+                <label for="question4-1-NO">NO<input type="radio" id="question4-1-NO" name="question4-1" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿El refresco se sirvió directamente de la torre fountain y cumplió con las características establecidas, Sin derrames, Hielo/Gas, Sabor, Calibración, Estado equipo?</p>
+            <div class="options-container">
+                <label for="question5-1-SI">SI<input type="radio" id="question5-1-SI" name="question5-1" value="SI"></label>
+                <label for="question5-1-NO">NO<input type="radio" id="question5-1-NO" name="question5-1" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿El baño se encuentra en buenas condiciones de mantenimiento y limpieza?</p>
+            <div class="options-container">
+                <label for="question6-SI">SI<input type="radio" id="question6-SI" name="question6" value="SI"></label>
+                <label for="question6-NO">NO<input type="radio" id="question6-NO" name="question6" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿En el baño, los suministros se encuentran disponibles y con dotaciones?</p>
+            <div class="options-container">
+                <label for="question7-SI">SI<input type="radio" id="question7-SI" name="question7" value="SI"></label>
+                <label for="question7-NO">NO<input type="radio" id="question7-NO" name="question7" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿La sala se encuentra en buenas condiciones de mantenimiento y de limpieza?</p>
+            <div class="options-container">
+                <label for="question8-SI">SI<input type="radio" id="question8-SI" name="question8" value="SI"></label>
+                <label for="question8-NO">NO<input type="radio" id="question8-NO" name="question8" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿La arquilla y los lentes se encontraban en buenas condiciones?</p>
+            <div class="options-container">
+                <label for="question9-SI">SI<input type="radio" id="question9-SI" name="question9" value="SI"></label>
+                <label for="question9-NO">NO<input type="radio" id="question9-NO" name="question9" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿Durante la proyección de la película todas las imágenes y subtítulos se proyectaron de forma correcta, sin interrupciones de imagen y sonido?</p>
+            <div class="options-container">
+                <label for="question10-SI">SI<input type="radio" id="question10-SI" name="question10" value="SI"></label>
+                <label for="question10-NO">NO<input type="radio" id="question10-NO" name="question10" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿La comodidad de la sala cumplió con las características establecidas?</p>
+            <div class="options-container">
+                <label for="question11-1-SI">SI<input type="radio" id="question11-1-SI" name="question11-1" value="SI"></label>
+                <label for="question11-1-NO">NO<input type="radio" id="question11-1-NO" name="question11-1" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿Tiempo en fila de taquilla y de atención en mostrador no excedió el estándar?</p>
+            <div class="options-container">
+                <label for="question12-1-SI">SI<input type="radio" id="question12-1-SI" name="question12-1" value="SI"></label>
+                <label for="question12-1-NO">NO<input type="radio" id="question12-1-NO" name="question12-1" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿Tiempo en fila dulcería y de atención en mostrador no excedió el estándar?</p>
+            <div class="options-container">
+                <label for="question13-1-SI">SI<input type="radio" id="question13-1-SI" name="question13-1" value="SI"></label>
+                <label for="question13-1-NO">NO<input type="radio" id="question13-1-NO" name="question13-1" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿En la interacción con el personal, fue abordado amablemente, le sonrió y le saludó?</p>
+            <div class="options-container">
+                <label for="question14-SI">SI<input type="radio" id="question14-SI" name="question14" value="SI"></label>
+                <label for="question14-NO">NO<input type="radio" id="question14-NO" name="question14" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>¿Al finalizar la interacción con el personal, le sonrieron, le hablaron por su nombre, se despidieron de usted y/o promovieron que volviera a visitar el cine?</p>
+            <div class="options-container">
+                <label for="question15-SI">SI<input type="radio" id="question15-SI" name="question15" value="SI"></label>
+                <label for="question15-NO">NO<input type="radio" id="question15-NO" name="question15" value="NO"></label>
+            </div>
+        </div>
+        <div class="question">
+            <p>En caso de haber tenido algún problema en su visita al cine:</p>
+            <p>¿El mismo fue solucionado con prontitud y amabilidad, por algún empleado, supervisor o gerente?</p>
+            <div class="options-container">
+                <label for="question16-SI">SI<input type="radio" id="question16-SI" name="question16" value="SI"></label>
+                <label for="question16-NO">NO<input type="radio" id="question16-NO" name="question16" value="NO"></label>
+            </div>
+        </div>
+
+
+            <!-- Botón de exportar a PDF -->
+        <div class="result" id="result"></div>
+        <button class="export-button" onclick="exportPDF()">Exportar a PDF</button>
+      </div>
+    </div>
+  </div>
+
+ <script>
+    function authenticate() {
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
+
+      if (username === "usuario" && password === "contraseña") {
+        document.getElementById("auth-container").style.display = "none";
+        document.getElementById("question-container").style.display = "block";
+        startTimer();
+      } else {
+        alert("Usuario o contraseña incorrectos");
+      }
+    }
+
+ function exportPDF() {
+      var pdfContent = [];
+      var totalScore = 0;
+      var correctCount = 0;
+
+      var nombre = document.getElementById("nombre").value;
+      var area = document.getElementById("area").value;
+      var conjunto = document.getElementById("conjunto").value;
+
+      pdfContent.push({ text: "Nombre: " + nombre });
+      pdfContent.push({ text: "Área: " + area });
+      pdfContent.push({ text: "Conjunto: " + conjunto });
+
+      var questions = document.getElementsByClassName("question");
+      for (let i = 0; i < questions.length; i++) {
+        var questionText = questions[i].querySelector("p").textContent;
+        var selectedOption = questions[i].querySelector('input[type="radio"]:checked');
+        var answerText = selectedOption ? selectedOption.value : "No respondida";
+        var isAnswered = selectedOption !== null;
+        var isCorrect = isAnswered ? selectedOption.value === "SI" : false;
+
+        if (isCorrect) {
+          correctCount++;
+        }
+
+        var color = isAnswered ? (isCorrect ? "#004d00" : "#8B0000") : "#f9a825";
+
+        var questionContent = [
+          { text: "Pregunta:", bold: true },
+          { text: questionText },
+          { text: "Respuesta:", bold: true },
+          { text: answerText, color: color },
+          { text: "\n" }
+        ];
+
+        pdfContent.push(questionContent);
+      }
+
+      totalScore = Math.round((correctCount / questions.length) * 100);
+
+      pdfContent.unshift({ text: "Puntaje total: " + totalScore });
+
+      var docDefinition = {
+        content: [
+          { text: "Evaluación de conocimientos", style: "header" },
+          pdfContent
+        ],
+        styles: {
+          header: {
+            fontSize: 18,
+            bold: true,
+            margin: [0, 0, 0, 10],
+          }
+        }
+      };
+
+      pdfMake.createPdf(docDefinition).open();
+    }
+  </script>
+</body>
+</html>
