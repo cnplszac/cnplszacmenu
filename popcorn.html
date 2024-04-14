@@ -43,6 +43,14 @@
       cursor: pointer;
     }
 
+.timer {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  cursor: pointer; /* Cambia el cursor a una mano cuando pasa sobre el cronómetro */
+}
+
+
     /* Estilos para opciones de "SI" y "NO" */
     label[for*="SI"], label[for*="NO"] {
       background-color: orange;
@@ -157,7 +165,7 @@
         <input class="auth-input" type="text" id="nombre" required>
       </div>
       <div>
-        <label class="auth-label" for="area">Área:</label>
+        <label class="auth-label" for="area">Puesto:</label>
         <input class="auth-input" type="text" id="area" required>
       </div>
       <div>
@@ -246,15 +254,29 @@
                 <label for="question11-1-NO">NO<input type="radio" id="question11-1-NO" name="question11-1" value="NO"></label>
             </div>
         </div>
-        <div class="question">
-            <p>¿Tiempo en fila de taquilla y de atención en mostrador no excedió el estándar?</p>
-            <div class="options-container">
-                <label for="question12-1-SI">SI<input type="radio" id="question12-1-SI" name="question12-1" value="SI"></label>
-                <label for="question12-1-NO">NO<input type="radio" id="question12-1-NO" name="question12-1" value="NO"></label>
-            </div>
+        
+
+<div class="question">
+    <p>¿Tiempo en fila de taquilla y de atención en mostrador no excedió el estándar?</p>
+    <div class="timer" id="timer-question12" onclick="toggleTimer('question12')">00:00:00</div>
+    <button id="start-button-question12" onclick="startStopTimer('question12')">Iniciar</button>
+    <button id="reset-button-question12" onclick="resetTimer('question12')">Reiniciar</button>
+    <div class="options-container">
+        <label for="question12-1-SI">SI<input type="radio" id="question12-1-SI" name="question12-1" value="SI"></label>
+        <label for="question12-1-NO">NO<input type="radio" id="question12-1-NO" name="question12-1" value="NO"></label>
+    </div>
+</div>
+
+
+
+
+
         </div>
         <div class="question">
             <p>¿Tiempo en fila dulcería y de atención en mostrador no excedió el estándar?</p>
+<div class="timer" id="timer-question13" onclick="toggleTimer('question13')">00:00:00</div>
+    <button id="start-button-question13" onclick="startStopTimer('question13')">Iniciar</button>
+    <button id="reset-button-question13" onclick="resetTimer('question13')">Reiniciar</button>
             <div class="options-container">
                 <label for="question13-1-SI">SI<input type="radio" id="question13-1-SI" name="question13-1" value="SI"></label>
                 <label for="question13-1-NO">NO<input type="radio" id="question13-1-NO" name="question13-1" value="NO"></label>
@@ -283,6 +305,29 @@
             </div>
         </div>
 
+<!-- Agregar este código dentro del div questions-container -->
+<div>
+  <label for="evidence1">Adjuntar evidencia 1:</label>
+  <input type="file" id="evidence1" accept="image/*">
+</div>
+<div>
+  <label for="evidence2">Adjuntar evidencia 2:</label>
+  <input type="file" id="evidence2" accept="image/*">
+</div>
+<div>
+  <label for="evidence3">Adjuntar evidencia 3:</label>
+  <input type="file" id="evidence3" accept="image/*">
+</div>
+<div>
+  <label for="evidence4">Adjuntar evidencia 4:</label>
+  <input type="file" id="evidence4" accept="image/*">
+</div>
+<div>
+  <label for="evidence5">Adjuntar evidencia 5:</label>
+  <input type="file" id="evidence5" accept="image/*">
+</div>
+
+
 
             <!-- Botón de exportar a PDF -->
         <div class="result" id="result"></div>
@@ -291,78 +336,169 @@
     </div>
   </div>
 
- <script>
-    function authenticate() {
-      var username = document.getElementById("username").value;
-      var password = document.getElementById("password").value;
+<script>
+  function authenticate() {
+  var username = document.getElementById("username").value;
+  var password = document.getElementById("password").value;
 
-      if (username === "usuario" && password === "contraseña") {
-        document.getElementById("auth-container").style.display = "none";
-        document.getElementById("question-container").style.display = "block";
-        startTimer();
-      } else {
-        alert("Usuario o contraseña incorrectos");
+  if (username === "usuario" && password === "contraseña") {
+    document.getElementById("auth-container").style.display = "none";
+    document.getElementById("question-container").style.display = "block";
+  } else {
+    alert("Usuario o contraseña incorrectos");
+  }
+}
+
+var timers = {}; // Objeto para almacenar los intervalos de cada cronómetro
+var timeElapsed = {}; // Objeto para almacenar el tiempo transcurrido en cada cronómetro
+
+function startStopTimer(timerId) {
+  var button = document.getElementById("start-button-" + timerId);
+  if (!(timerId in timers)) {
+    startTimer(timerId);
+    button.textContent = "Pausar";
+  } else {
+    clearInterval(timers[timerId]);
+    delete timers[timerId];
+    button.textContent = "Iniciar";
+  }
+}
+
+function resetTimer(timerId) {
+  clearInterval(timers[timerId]);
+  document.getElementById("timer-" + timerId).textContent = "00:00:00";
+  delete timers[timerId];
+  timeElapsed[timerId] = 0; // Reiniciar el tiempo transcurrido
+}
+
+function startTimer(timerId) {
+  var seconds = 0;
+  var minutes = 0;
+  var hours = 0;
+
+  if (timerId in timeElapsed) {
+    var elapsedTime = timeElapsed[timerId];
+    seconds = elapsedTime % 60;
+    minutes = Math.floor((elapsedTime / 60) % 60);
+    hours = Math.floor(elapsedTime / 3600);
+  }
+
+  timers[timerId] = setInterval(function() {
+    seconds++;
+    if (seconds >= 60) {
+      seconds = 0;
+      minutes++;
+      if (minutes >= 60) {
+        minutes = 0;
+        hours++;
       }
     }
+    document.getElementById("timer-" + timerId).textContent = (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+    timeElapsed[timerId] = hours * 3600 + minutes * 60 + seconds; // Guardar el tiempo transcurrido
+  }, 1000);
+}
 
- function exportPDF() {
-      var pdfContent = [];
-      var totalScore = 0;
-      var correctCount = 0;
 
-      var nombre = document.getElementById("nombre").value;
-      var area = document.getElementById("area").value;
-      var conjunto = document.getElementById("conjunto").value;
 
-      pdfContent.push({ text: "Nombre: " + nombre });
-      pdfContent.push({ text: "Área: " + area });
-      pdfContent.push({ text: "Conjunto: " + conjunto });
 
-      var questions = document.getElementsByClassName("question");
-      for (let i = 0; i < questions.length; i++) {
-        var questionText = questions[i].querySelector("p").textContent;
-        var selectedOption = questions[i].querySelector('input[type="radio"]:checked');
-        var answerText = selectedOption ? selectedOption.value : "No respondida";
-        var isAnswered = selectedOption !== null;
-        var isCorrect = isAnswered ? selectedOption.value === "SI" : false;
+function exportPDF() {
+  // Verificar si hay preguntas sin responder
+  var unansweredQuestions = document.querySelectorAll('.question:not(:has(input[type="radio"]:checked))').length;
+  if (unansweredQuestions > 0) {
+    alert("Por favor, responde todas las preguntas antes de exportar el PDF.");
+    return; // Detener la exportación del PDF
+  }
 
-        if (isCorrect) {
-          correctCount++;
-        }
+  var pdfContent = [];
+  var totalScore = 0;
+  var correctCount = 0;
 
-        var color = isAnswered ? (isCorrect ? "#004d00" : "#8B0000") : "#f9a825";
+  var nombre = document.getElementById("nombre").value;
+  var area = document.getElementById("area").value;
+  var conjunto = document.getElementById("conjunto").value;
 
-        var questionContent = [
-          { text: "Pregunta:", bold: true },
-          { text: questionText },
-          { text: "Respuesta:", bold: true },
-          { text: answerText, color: color },
-          { text: "\n" }
-        ];
+  pdfContent.push({ text: "Nombre: " + nombre });
+  pdfContent.push({ text: "Área: " + area });
+  pdfContent.push({ text: "Conjunto: " + conjunto });
 
-        pdfContent.push(questionContent);
-      }
+  var questions = document.getElementsByClassName("question");
+  for (let i = 0; i < questions.length; i++) {
+    var questionText = questions[i].querySelector("p").textContent;
+    var selectedOption = questions[i].querySelector('input[type="radio"]:checked');
+    var answerText = selectedOption ? selectedOption.value : "No respondida";
+    var isAnswered = selectedOption !== null;
+    var isCorrect = isAnswered ? selectedOption.value === "SI" : false;
 
-      totalScore = Math.round((correctCount / questions.length) * 100);
-
-      pdfContent.unshift({ text: "Puntaje total: " + totalScore });
-
-      var docDefinition = {
-        content: [
-          { text: "Evaluación POPCORN", style: "header" },
-          pdfContent
-        ],
-        styles: {
-          header: {
-            fontSize: 18,
-            bold: true,
-            margin: [0, 0, 0, 10],
-          }
-        }
-      };
-
-      pdfMake.createPdf(docDefinition).open();
+    if (isCorrect) {
+      correctCount++;
     }
-  </script>
+
+    var color = isAnswered ? (isCorrect ? "#004d00" : "#8B0000") : "#f9a825";
+
+    var questionContent = [
+      { text: "Pregunta:", bold: true },
+      { text: questionText },
+      { text: "Respuesta:", bold: true },
+      { text: answerText, color: color },
+      { text: "\n" }
+    ];
+
+    pdfContent.push(questionContent);
+
+    // Mostrar campo de comentario si la respuesta es "NO"
+    if (!isCorrect && answerText === "NO") {
+      var comment = prompt("Por favor, proporcione un comentario para la pregunta: '" + questionText + "' ya que no se cumplió:");
+      if (comment !== null && comment !== "") {
+        pdfContent.push({ text: "Agregue comentario por que no se cumplió:", bold: true });
+        pdfContent.push({ text: comment, color: "#8B0000" }); // Agregar el comentario en rojo
+      }
+    }
+  }
+
+  // Leer archivos adjuntos
+  var filePromises = [];
+  var images = document.querySelectorAll('input[type="file"]');
+  images.forEach(function(image) {
+    var file = image.files[0];
+    if (file) {
+      var filePromise = new Promise(function(resolve) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+          resolve({ image: event.target.result, width: 200 });
+        };
+        reader.readAsDataURL(file);
+      });
+      filePromises.push(filePromise);
+    }
+  });
+
+  Promise.all(filePromises).then(function(images) {
+    pdfContent = pdfContent.concat(images);
+
+    totalScore = Math.round((correctCount / questions.length) * 100);
+    pdfContent.unshift({ text: "Puntaje total: " + totalScore });
+
+    var docDefinition = {
+      content: [
+        { text: "Evaluación POPCORN", style: "header" },
+        pdfContent
+      ],
+      styles: {
+        header: {
+          fontSize: 18,
+          bold: true,
+          margin: [0, 0, 0, 10],
+        }
+      }
+    };
+
+    pdfMake.createPdf(docDefinition).open();
+  });
+}
+
+</script>
+
+
+
 </body>
-</html>
+</html> 
