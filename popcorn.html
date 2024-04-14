@@ -248,7 +248,7 @@
             </div>
         </div>
         <div class="question">
-            <p>¿La comodidad de la sala cumplió con las características establecidas?</p>
+            <p>¿La comodidad de la sala cumplió con las características establecidas, Butacas, Temperatura  22° C y 24°C?</p>
             <div class="options-container">
                 <label for="question11-1-SI">SI<input type="radio" id="question11-1-SI" name="question11-1" value="SI"></label>
                 <label for="question11-1-NO">NO<input type="radio" id="question11-1-NO" name="question11-1" value="NO"></label>
@@ -492,9 +492,10 @@ function exportPDF() {
       }
     };
 
-    pdfMake.createPdf(docDefinition).open();
+    pdfMake.createPdf(docDefinition).download('evaluacion_POPCORN.pdf'); // Cambio aquí para descargar el PDF con un nombre específico
   });
 }
+
 
 </script>
 
