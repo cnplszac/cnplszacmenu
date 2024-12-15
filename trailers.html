@@ -7,24 +7,19 @@
     <script>
         let inactivityTimer;
 
-        // Verificar si el usuario ha iniciado sesión
         function isLoggedIn() {
-            // Aquí puedes implementar la lógica de verificación de inicio de sesión
             return true; // Cambiar a la lógica real de verificación de inicio de sesión
         }
 
-        // Redireccionar a la página de inicio de sesión
         function redirectToLogin() {
             window.location.href = "https://cnplszac.github.io/cinepolitos"; // Cambia a tu página de login
         }
 
-        // Reiniciar el temporizador de inactividad
         function resetTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(redirectToLogin, 10000); // Redirigir después de 10 segundos
         }
 
-        // Comprobar acceso al cargar la página
         function checkAccess() {
             if (!isLoggedIn()) {
                 redirectToLogin();
@@ -33,7 +28,6 @@
             }
         }
 
-        // Configurar eventos para detectar actividad del usuario
         window.onload = () => {
             checkAccess();
             document.addEventListener('mousemove', resetTimer);
@@ -48,7 +42,7 @@
             color: #fff;
             margin: 0;
             padding: 20px;
-            overflow-x: hidden; /* Evita el desplazamiento horizontal */
+            overflow-x: hidden;
         }
         .navbar {
             background-color: rgba(0, 0, 0, 0.7);
@@ -61,20 +55,22 @@
             padding: 0;
             display: flex;
             justify-content: center;
+            flex-wrap: wrap; /* Permitir que los elementos se ajusten */
         }
         .navbar li {
-            margin: 0 15px;
+            margin: 0 10px; /* Reduce el margen lateral */
         }
         .navbar a {
             color: #ffeb3b;
             text-decoration: none;
             font-size: 1.2em;
             transition: color 0.3s, transform 0.3s;
-            display: inline-block; /* Asegura que la transformación funcione correctamente */
+            padding: 5px 10px; /* Añadir padding para evitar que se salgan */
+            white-space: nowrap; /* Evitar que el texto se divida */
         }
         .navbar a:hover {
             color: #fff;
-            transform: scale(1.2); /* Aumentar el tamaño al pasar el mouse */
+            transform: scale(1.2);
         }
         h1, .title {
             text-align: center;
@@ -86,8 +82,8 @@
             margin-bottom: 30px;
         }
         h1:hover {
-            transform: scale(1.2); /* Aumentar el tamaño del título al pasar el mouse */
-            color: #ffeb3b; /* Cambiar color al pasar el mouse */
+            transform: scale(1.2);
+            color: #ffeb3b;
         }
         .coming-soon {
             font-size: 1.8em;
@@ -108,7 +104,7 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             transition: transform 0.3s;
             width: 100%; 
-            max-width: 560px; /* Ancho máximo para los videos */
+            max-width: 560px;
         }
         .video:hover {
             transform: scale(1.05);
@@ -128,10 +124,19 @@
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        /* Efecto al pasar el mouse en el título */
         .title:hover {
-            color: #ffeb3b; /* Cambia el color al pasar el mouse */
-            transform: scale(1.1); /* Aumenta el tamaño */
+            color: #ffeb3b;
+            transform: scale(1.1);
+        }
+
+        /* Media Queries para dispositivos móviles */
+        @media (max-width: 600px) {
+            .navbar a {
+                font-size: 1em; /* Ajustar tamaño de fuente */
+            }
+            .navbar li {
+                margin: 0 5px; /* Reducir margen lateral */
+            }
         }
     </style>
 </head>
