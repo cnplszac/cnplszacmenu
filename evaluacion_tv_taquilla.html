@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Evaluación de conocimientos</title>
+  <style>
+    body {
+      background-color: #000033;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .options-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    label {
+      display: inline-block;
+      padding: 10px;
+      background-color: #f9a825;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    label:hover {
+      background-color: #f57f17;
+    }
+
+    .result {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .authenticate-button,
+    .export-button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #2196F3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .authenticate-button:hover,
+    .export-button:hover {
+      background-color: #0b7dda;
+    }
+
+    .timer {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .header-image {
+      width: 20%;
+      max-width: 20%;
+      margin-bottom: 20px;
+    }
+
+    .auth-input {
+      display: block;
+      width: calc(25% - 40px);
+      margin: 0 auto 10px auto;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    #question-container input[type="text"] {
+      width: 28%;
+      margin-bottom: 10px;
+    }
+
+    #auth-container {
+      text-align: center;
+    }
+
+    .auth-label {
+      width: 150px;
+      display: inline-block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      background-color: #f9a825;
+      color: #fff;
+      border-radius: 4px;
+      padding: 10px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
+</head>
+<body>
+  <div class="container">
+    <img src="cn.jpg" alt="Encabezado" class="header-image">
+
+    <h1>Evaluación de conocimientos</h1>
+
+    <div id="auth-container">
+      <label class="auth-label" for="username">Usuario:</label>
+      <input class="auth-input" type="text" id="username" required>
+      <label class="auth-label" for="password">Contraseña:</label>
+      <input class="auth-input" type="password" id="password" required>
+      <button class="authenticate-button" onclick="authenticate()">Iniciar sesión</button>
+    </div>
+
+    <div style="display: none;" id="question-container">
+      <div>
+        <label class="auth-label" for="nombre">Nombre:</label>
+        <input class="auth-input" type="text" id="nombre" required>
+      </div>
+      <div>
+        <label class="auth-label" for="area">Área:</label>
+        <input class="auth-input" type="text" id="area" required>
+      </div>
+      <div>
+        <label class="auth-label" for="conjunto">Conjunto:</label>
+        <input class="auth-input" type="text" id="conjunto" required>
+      </div>
+
+      <div class="timer" id="timer">300</div>
+      <div id="questions-container"></div>
+      <div class="result" id="result"></div>
+      <button class="export-button" onclick="exportPDF()">Exportar a PDF</button>
+    </div>
+  </div>
+
+  <script>
+    function authenticate() {
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
+
+      if (username === "usuario" && password === "contraseña") {
+        document.getElementById("auth-container").style.display = "none";
+        document.getElementById("question-container").style.display = "block";
+        displayQuestions(); // Llama a la función para mostrar preguntas
+        startTimer(); // Inicia el temporizador
+      } else {
+        alert("Usuario o contraseña incorrectos");
+      }
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+var questions = [
+    { 
+        question: "1. El saludo correcto cuando atendemos al cliente es el siguiente:", 
+        options: [
+            "a) Buenos días/tardes/noches Bienvenido a Cinépolis.", 
+            "b) Buenas.", 
+            "c) Sí, buenas."
+        ], 
+        correctAnswer: "a) Buenos días/tardes/noches Bienvenido a Cinépolis." 
+    },
+    { 
+        question: "2. Luego del saludo, solicitamos la tarjeta club Cinépolis. ¿Por qué razones lo mencionamos como segundo paso?", 
+        options: [
+            "a) Personalizar u Ofrecer", 
+            "b) Cobrar los boletos de una vez con la TCC", 
+            "c) Sólo para acumular puntos."
+        ], 
+        correctAnswer: "a) Personalizar u Ofrecer" 
+    },
+    { 
+        question: "3. Cuando el cliente ordena película sin horario, debemos indicarle al cliente lo siguiente:", 
+        options: [
+            "a) ¿A las xx:xx (horario más próximo) está bien?", 
+            "b) Decirle las películas que están próximas a comenzar", 
+            "c) Indicarle todas las horas de la película elegida."
+        ], 
+        correctAnswer: "a) ¿A las xx:xx (horario más próximo) está bien?" 
+    },
+    { 
+        question: "4. Si el cliente solicita alguna recomendación, debemos realizar lo siguiente:", 
+        options: [
+            "a) Brindar Sinopsis", 
+            "b) Decir: No recomendamos películas", 
+            "c) Indicarle que se dirija al tríptico."
+        ], 
+        correctAnswer: "a) Brindar Sinopsis" 
+    },
+    { 
+        question: "5. Después de seleccionar los asientos debemos confirmar lo siguiente:", 
+        options: [
+            "a) Película, Sala y Hora", 
+            "b) Asientos, Película y Hora", 
+            "c) Película, asientos y monto a pagar"
+        ], 
+        correctAnswer: "b) Asientos, Película y Hora" 
+    },
+    { 
+        question: "6. Cuando el cliente cancela con efectivo debo decir:", 
+        options: [
+            "a) Recibo $xxxx", 
+            "b) Me cancela con efectivo", 
+            "c) No debo indicar nada"
+        ], 
+        correctAnswer: "a) Recibo $xxxx" 
+    },
+    { 
+        question: "7. Una opción correcta para ofrecer la tarjeta Club Cinépolis sería la siguiente:", 
+        options: [
+            "a) ¿No desea la Tarjeta Club Cinepolis?", 
+            "b) ¿Tal vez desea obtener la Tarjeta Club Cinepolis?", 
+            "c) ¿Desea adquirir la Tarjeta Club Cinepolis?"
+        ], 
+        correctAnswer: "c) ¿Desea adquirir la Tarjeta Club Cinepolis?" 
+    },
+    { 
+        question: "8. El efectivo debe guardarse en la caja después de:", 
+        options: [
+            "a) Cuando recibo el dinero", 
+            "b) Después de despedir al cliente", 
+            "c) cuando le entrego el cambio."
+        ], 
+        correctAnswer: "b) Después de despedir al cliente" 
+    },
+    { 
+        question: "9. Cuando se eligen los asientos debemos indicar lo siguiente:", 
+        options: [
+            "a) La pantalla se encuentra en la parte superior, verde y gris disponibles, ¿está bien?", 
+            "b) La pantalla se encuentra en la parte superior, el/los asientos verdes, son los sugeridos, ¿está bien?", 
+            "c) La pantalla se encuentra en la parte superior, lo azul se encuentra ocupado."
+        ], 
+        correctAnswer: "b) La pantalla se encuentra en la parte superior, el/los asientos verdes, son los sugeridos, ¿está bien?" 
+    },
+    { 
+        question: "10. Cuando el cliente cancela con tarjeta, debemos solicitar:", 
+        options: [
+            "a) Identificación", 
+            "b) el nombre y apellidos", 
+            "c) Tarjeta Club Cinepolis"
+        ], 
+        correctAnswer: "a) Identificación" 
+    },
+    { 
+        question: "11. En los boletos debemos resaltar lo siguiente:", 
+        options: [
+            "a) Película, Hora y Sala", 
+            "b) Sala, Fila y Asiento", 
+            "c) Fecha, Asiento y Película"
+        ], 
+        correctAnswer: "b) Sala, Fila y Asiento" 
+    },
+    { 
+        question: "12. Los boletos de Niño deben resaltarse con:", 
+        options: [
+            "a) Bolígrafo", 
+            "b) Marcador", 
+            "c) Sellarlos"
+        ], 
+        correctAnswer: "b) Marcador" 
+    },
+    { 
+        question: "13. Cuando se realiza el pago con tarjeta, debemos decir lo siguiente:", 
+        options: [
+            "a) Le confirmo $xxxx", 
+            "b) Le entrego sus boletos", 
+            "c) Cancela x cantidad de boletos"
+        ], 
+        correctAnswer: "a) Le confirmo $xxxx" 
+    },
+    { 
+        question: "14. ¿Qué debo de indicar al cliente al momento de entregarle sus boletos?", 
+        options: [
+            "a) Titulo de la película, si es doblada, subtitulada o 3D y el Horario", 
+            "b) La sala, el horario y la ubicación de sus butacas", 
+            "c) Cantidad de boletos, Titulo de la película, si es doblada, subtitulada o 3D y el Horario e indicar que su asiento viene marcado en el boleto"
+        ], 
+        correctAnswer: "b) La sala, el horario y la ubicación de sus butacas" 
+    },
+    { 
+        question: "15. En todos los negocios Cinepolis debemos sonreír al cliente en el saludo y despedida esto haciendo:", 
+        options: [
+            "a) Contacto visual", 
+            "b) ningún gesto no genuino", 
+            "c) No mirar al cliente", 
+            "d) Hablar rápido"
+        ], 
+        correctAnswer: "a) Contacto visual" 
+    },
+    { 
+        question: "16. Para utilizar el pase anual el cliente deberá presentar:", 
+        options: [
+            "a) Correo Electrónico que lo acredite como propietario del pase", 
+            "b) Documento de identificación Oficial", 
+            "c) Tarjeta Club Cinepolis"
+        ], 
+        correctAnswer: "b) Documento de identificación Oficial" 
+    },
+    { 
+        question: "17. El tiempo límite para retirar los boletos cuando se realiza una reservación sin pagar es de:", 
+        options: [
+            "a) 1 hora", 
+            "b) 40 minutos", 
+            "c) 25min"
+        ], 
+        correctAnswer: "b) 40 minutos" 
+    },
+    { 
+        question: "18. ¿Cuál es el porcentaje que acumula la tarjeta club Cinepolis al realizar la compra?", 
+        options: [
+            "a) 7%", 
+            "b) 5%", 
+            "c) 2%"
+        ], 
+        correctAnswer: "b) 5%" 
+    },
+    { 
+        question: "19. Seleccione cual es el tiempo en fila y tiempo en mostrador:", 
+        options: [
+            "a) 3 en fila y 2 en mostrador", 
+            "b) 2 en mostrador y 4 en fila", 
+            "c) 4 en mostrador y 2 en fila"
+        ], 
+        correctAnswer: "b) 2 en mostrador y 4 en fila" 
+    },
+    { 
+        question: "20. ¿Cuál es el kit completo del vendedor?", 
+        options: [
+            "a) Calculadora, bolígrafo, marcador, marcador de billetes, sello de cancelado, rollo, pinpad y lámpara.", 
+            "b) Calculadora, bolígrafo, tijeras, marcador de billetes, sello de cancelado, rollos.", 
+            "c) Calculadora, bolígrafo, engrampadora, tijeras, rollos, marcador y lámpara."
+        ], 
+        correctAnswer: "c) Calculadora, bolígrafo, engrampadora, tijeras, rollos, marcador y lámpara." 
+    }
+];
+
+    function displayQuestions() {
+      shuffleArray(questions);
+      var questionsContainer = document.getElementById("questions-container");
+      questionsContainer.innerHTML = '';
+
+      questions.forEach((question, index) => {
+        shuffleArray(question.options);
+        var questionElement = document.createElement("div");
+        questionElement.className = "question";
+        questionElement.setAttribute("data-correct-answer", question.correctAnswer);
+        
+        var questionText = document.createElement("p");
+        questionText.textContent = question.question;
+        questionElement.appendChild(questionText);
+
+        var optionsContainer = document.createElement("div");
+        optionsContainer.className = "options-container";
+
+        question.options.forEach(option => {
+          var optionLabel = document.createElement("label");
+          var optionInput = document.createElement("input");
+          optionInput.type = "radio";
+          optionInput.name = "question" + index;
+          optionInput.value = option;
+          optionLabel.appendChild(optionInput);
+          optionLabel.appendChild(document.createTextNode(option));
+          optionsContainer.appendChild(optionLabel);
+        });
+
+        questionElement.appendChild(optionsContainer);
+        questionsContainer.appendChild(questionElement);
+      });
+    }
+
+    function startTimer() {
+      var timerElement = document.getElementById("timer");
+      var seconds = 300;
+      timerElement.textContent = seconds;
+      var timerInterval = setInterval(function () {
+        seconds--;
+        timerElement.textContent = seconds;
+
+        if (seconds === 0) {
+          clearInterval(timerInterval);
+          timerElement.textContent = "Tiempo agotado";
+          disableQuestions();
+        }
+      }, 1000);
+    }
+
+    function disableQuestions() {
+      var questions = document.getElementsByClassName("question");
+      for (let i = 0; i < questions.length; i++) {
+        var options = questions[i].getElementsByTagName("input");
+        for (let j = 0; j < options.length; j++) {
+          options[j].disabled = true;
+        }
+      }
+    }
+
+    function exportPDF() {
+      var pdfContent = [];
+      var totalScore = 0;
+
+      var nombre = document.getElementById("nombre").value;
+      var area = document.getElementById("area").value;
+      var conjunto = document.getElementById("conjunto").value;
+
+      pdfContent.push({ text: "Nombre: " + nombre });
+      pdfContent.push({ text: "Área: " + area });
+      pdfContent.push({ text: "Conjunto: " + conjunto });
+
+      var currentDate = new Date();
+      var formattedDate = currentDate.toLocaleDateString();
+      var formattedTime = currentDate.toLocaleTimeString();
+      pdfContent.push({ text: "Fecha y hora de exportación: " + formattedDate + " " + formattedTime });
+
+      var questions = document.getElementsByClassName("question");
+      for (let i = 0; i < questions.length; i++) {
+        var questionText = questions[i].querySelector("p").textContent;
+        var selectedOption = questions[i].querySelector('input[name="question' + i + '"]:checked');
+        var answerText = selectedOption ? selectedOption.value : "No respondida";
+        var correctAnswer = questions[i].getAttribute('data-correct-answer');
+
+        var isCorrect = selectedOption ? (selectedOption.value === correctAnswer) : false;
+
+        if (isCorrect) {
+          totalScore += 100 / questions.length; 
+        }
+
+        var color = isCorrect ? "#004d00" : "#8B0000";
+
+        var questionContent = [
+          { text: "Pregunta:", bold: true },
+          { text: questionText },
+          { text: "Tu respuesta:", bold: true },
+          { text: answerText, color: color },
+        ];
+
+        if (!isCorrect) {
+          questionContent.push({ text: "Respuesta correcta:", bold: true });
+          questionContent.push({ text: correctAnswer, color: "#004d00" });
+        }
+
+        questionContent.push({ text: "\n" });
+        pdfContent.push(questionContent);
+      }
+
+      totalScore = Math.round(totalScore);
+      pdfContent.unshift({ text: "Puntaje total: " + totalScore });
+
+      var docDefinition = {
+        content: [
+          { text: "Evaluación de conocimientos", style: "header" },
+          pdfContent
+        ]
+      };
+
+      pdfMake.createPdf(docDefinition).download();
+
+      // Deshabilitar las preguntas después de exportar el PDF
+      disableQuestions();
+    }
+  </script>
+</body>
+</html>
