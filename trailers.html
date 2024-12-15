@@ -18,11 +18,11 @@
             window.location.href = "https://cnplszac.github.io/cinepolitos"; // Cambia a tu página de login
         }
 
-        // Reiniciar el temporizador de inactividad
-        function resetTimer() {
-            clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(redirectToLogin, 10000); // Redirigir después de 10 segundos
-        }
+// Reiniciar el temporizador de inactividad
+function resetTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(redirectToLogin, 600000); // Redirigir después de 10 minutos
+}
 
         // Comprobar acceso al cargar la página
         function checkAccess() {
