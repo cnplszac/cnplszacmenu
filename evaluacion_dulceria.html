@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Evaluación de conocimientos</title>
+  <style>
+    body {
+      background-color: #000033;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .options-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    label {
+      display: inline-block;
+      padding: 10px;
+      background-color: #f9a825;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    label:hover {
+      background-color: #f57f17;
+    }
+
+    .result {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .authenticate-button,
+    .export-button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #2196F3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .authenticate-button:hover,
+    .export-button:hover {
+      background-color: #0b7dda;
+    }
+
+    .timer {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .header-image {
+      width: 20%;
+      max-width: 20%;
+      margin-bottom: 20px;
+    }
+
+    .auth-input {
+      display: block;
+      width: calc(25% - 40px);
+      margin: 0 auto 10px auto;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    #question-container input[type="text"] {
+      width: 28%;
+      margin-bottom: 10px;
+    }
+
+    #auth-container {
+      text-align: center;
+    }
+
+    .auth-label {
+      width: 150px;
+      display: inline-block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      background-color: #f9a825;
+      color: #fff;
+      border-radius: 4px;
+      padding: 10px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
+</head>
+<body>
+  <div class="container">
+    <img src="cn.jpg" alt="Encabezado" class="header-image">
+
+    <h1>Evaluación de conocimientos</h1>
+
+    <div id="auth-container">
+      <label class="auth-label" for="username">Usuario:</label>
+      <input class="auth-input" type="text" id="username" required>
+      <label class="auth-label" for="password">Contraseña:</label>
+      <input class="auth-input" type="password" id="password" required>
+      <button class="authenticate-button" onclick="authenticate()">Iniciar sesión</button>
+    </div>
+
+    <div style="display: none;" id="question-container">
+      <div>
+        <label class="auth-label" for="nombre">Nombre:</label>
+        <input class="auth-input" type="text" id="nombre" required>
+      </div>
+      <div>
+        <label class="auth-label" for="area">Área:</label>
+        <input class="auth-input" type="text" id="area" required>
+      </div>
+      <div>
+        <label class="auth-label" for="conjunto">Conjunto:</label>
+        <input class="auth-input" type="text" id="conjunto" required>
+      </div>
+
+      <div class="timer" id="timer">300</div>
+      <div id="questions-container"></div>
+      <div class="result" id="result"></div>
+      <button class="export-button" onclick="exportPDF()">Exportar a PDF</button>
+    </div>
+  </div>
+
+  <script>
+    function authenticate() {
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
+
+      if (username === "usuario" && password === "contraseña") {
+        document.getElementById("auth-container").style.display = "none";
+        document.getElementById("question-container").style.display = "block";
+        displayQuestions(); // Llama a la función para mostrar preguntas
+        startTimer(); // Inicia el temporizador
+      } else {
+        alert("Usuario o contraseña incorrectos");
+      }
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+   var questions = [
+    { 
+        question: "1. El tiempo para iniciar la habilitación en la dulcería es de:", 
+        options: ["a) 30min", "b) 40min", "c) 60min"], 
+        correctAnswer: "c) 60min" 
+    },
+    { 
+        question: "2. El proceso de lavado de utensilios es el siguiente:", 
+        options: [
+            "a) Suma Break Up-Agua-Suma Edén", 
+            "b) Suma Supreme (suma detergente ollas CR) y Agua", 
+            "c) Suma Supreme (suma detergente ollas CR)-Agua-Final Step"
+        ], 
+        correctAnswer: "c) Suma Supreme (suma detergente ollas CR)-Agua-Final Step" 
+    },
+    { 
+        question: "3. El cajón de maíz, contenedor de saborizante y cubeta del aceite debe estar a un ____% de su capacidad en la habilitación:", 
+        options: ["a) 70%", "b) 90%", "c) 50%"], 
+        correctAnswer: "b) 90%" 
+    },
+    { 
+        question: "4. El color de trapo que se utiliza para las área de preparación es el siguiente:", 
+        options: ["a) Verde", "b) Azul", "c) Blanco"], 
+        correctAnswer: "c) Blanco" 
+    },
+    { 
+        question: "5. El primer paso para lavarse las manos es el siguiente:", 
+        options: ["a) Humedecer las manos con agua", "b) Aplicar en la palma el jabón", "c) Aplicar en la palma Alcohol en Gel"], 
+        correctAnswer: "a) Humedecer las manos con agua" 
+    },
+    { 
+        question: "6. Durante la operación el cajón del maíz deberá tener un MINIMO de:", 
+        options: ["a) 75%", "b) 20%", "c) 50%"], 
+        correctAnswer: "a) 75%" 
+    },
+    { 
+        question: "7. Cuando se abastece el aceite al 90% en la habilitación debemos revisar que la manguera:", 
+        options: ["a) Quede doblada", "b) No esté doblada", "c) Esté limpia y doblada"], 
+        correctAnswer: "b) No esté doblada" 
+    },
+    { 
+        question: "8. El saborizante que sobró del día anterior, se debe tener en _____________ y guardar en el compartimiento inferior de la palomera en la inhabilitación:", 
+        options: [
+            "a) En una recipiente de aluminio", 
+            "b) Poner nuevamente en el empaque original", 
+            "c) En una bolsa plástica"
+        ], 
+        correctAnswer: "c) En una bolsa plástica" 
+    },
+    { 
+        question: "9. Cuando realizas la habilitación de la palomera, ¿cuáles botones debes encender inmediatamente?", 
+        options: ["a) Lights, Agitar y Oil system master", "b) Warmer, Kittle heat y agitator", "c) Lights, Warmer y Oil system master"], 
+        correctAnswer: "c) Lights, Warmer y Oil system master" 
+    },
+    { 
+        question: "10. Seleccione la cantidad de aceite de las palomeras de 32 onz según corresponda: Mantequilla, Caramelo, Light.", 
+        options: [
+            "a) 250ml, 350ml, 255ml", 
+            "b) 250ml, 300ml, 225ml", 
+            "c) 250ml, 300ml, 250ml"
+        ], 
+        correctAnswer: "c) 250ml, 300ml, 250ml" 
+    },
+    { 
+        question: "11. La bolsa donde se colocan las palomitas del día anterior deben ser________ y tienen una duración de _______ días.", 
+        options: ["a) Negras, 2 días", "b) Transparentes, 3 días", "c) Transparentes, 2 días"], 
+        correctAnswer: "c) Transparentes, 2 días" 
+    },
+    { 
+        question: "12. Cuando la aguja del CO2 esté por debajo de ____psi, debemos realizar el cambio del tanque.", 
+        options: ["a) 600psi", "b) 400psi", "c) 800psi"], 
+        correctAnswer: "a) 600psi" 
+    },
+    { 
+        question: "13. Las boquillas y los difusores deben colocarse en ______________, cuando realizamos el proceso de inhabilitación.", 
+        options: ["a) Final Step", "b) Suma Supreme", "c) Break Up"], 
+        correctAnswer: "b) Suma Supreme" 
+    },
+    { 
+        question: "14. Las cubetas y el carro del hielo deben lavarse por lo menos _______.", 
+        options: ["a) 1 vez cada 15 días", "b) Diariamente", "c) 2 veces al mes"], 
+        correctAnswer: "c) 2 veces al mes" 
+    },
+    { 
+        question: "15. Seleccione el químico que se utiliza para colocar los porta cucharones.", 
+        options: ["a) Suma Eden", "b) Break Up", "c) Suma Supreme"], 
+        correctAnswer: "a) Suma Eden" 
+    },
+    { 
+        question: "16. La temperatura del asador de salchichas y calentador de pan de ser:", 
+        options: ["a) 120°F y 150°F", "b) 150°F y 120°F", "c) 120°F y 120°F"], 
+        correctAnswer: "c) 120°F y 120°F" 
+    },
+    { 
+        question: "17. La receta de las palomitas de caramelo en una olla de 32oz es la siguiente:", 
+        options: [
+            "a) 900gr de maíz, 30gr de saborizante y 300ml de aceite", 
+            "b) 900gr de maíz, 300ml de aceite y 794gr de saborizante", 
+            "c) 900gr de maíz, 30gr de saborizante y 250ml de aceite"
+        ], 
+        correctAnswer: "b) 900gr de maíz, 300ml de aceite y 794gr de saborizante" 
+    },
+    { 
+        question: "18. La receta de las palomitas de mantequilla en una olla de 32oz es la siguiente:", 
+        options: [
+            "a) 900gr de maíz, 30gr de saborizante y 300ml de aceite", 
+            "b) 900gr de maíz, 30gr de saborizante y 250ml de aceite", 
+            "c) 900gr de maíz, 15gr de saborizante y 250ml de aceite"
+        ], 
+        correctAnswer: "b) 900gr de maíz, 30gr de saborizante y 250ml de aceite" 
+    },
+    { 
+        question: "19. El mostrador de dulcería se debe limpiar con trapo color:", 
+        options: ["a) Azul", "b) Verde", "c) Blanco"], 
+        correctAnswer: "b) Verde" 
+    },
+    { 
+        question: "20. En una bebida, el nivel del líquido debe estar ____cm por debajo del borde.", 
+        options: ["a) 2cm", "b) 1cm", "c) 3cm"], 
+        correctAnswer: "b) 1cm" 
+    },
+    { 
+        question: "21. Cuál es la cantidad en gramos que contiene el paquete de tortillas para los nachos:", 
+        options: ["a) 125gr", "b) 120gr", "c) 115gr"], 
+        correctAnswer: "a) 125gr" 
+    },
+    { 
+        question: "22. Indique la cantidad de oz que contiene los nachos con extra de chili (nueva receta).", 
+        options: ["a) 4oz", "b) 3oz", "c) 6oz"], 
+        correctAnswer: "b) 3oz" 
+    },
+    { 
+        question: "23. Cuando realizamos un hot dog con chili y queso, ¿cuál extra debemos colocar primero?", 
+        options: ["a) Queso", "b) Chili", "c) El extra se da en un recipiente aparte."], 
+        correctAnswer: "b) Chili" 
+    },
+    { 
+        question: "24. Todas la venta de cualquier producto de dulcería debe de estar respaldada por:", 
+        options: ["a) Efectivo", "b) Reporte de venta", "c) Ticket de sistema (factura)"], 
+        correctAnswer: "c) Ticket de sistema (factura)" 
+    },
+    { 
+        question: "25. El químico que se utiliza para el lavado de ollas de dulcería se llama:", 
+        options: ["a) Suma Edén", "b) Suma Grill", "c) Suma Break Up"], 
+        correctAnswer: "b) Suma Grill" 
+    },
+    { 
+        question: "26. Cuáles son los Criterios de calidad a considerar en las palomitas:", 
+        options: [
+            "a) Color, tamaño, consistencia, cantidad", 
+            "b) Tamaño, sabor, temperatura, cantidad", 
+            "c) Textura, cantidad, sabor, rendimiento", 
+            "d) Textura, sabor, tamaño, temperatura"
+        ], 
+        correctAnswer: "d) Textura, sabor, tamaño, temperatura" 
+    },
+    { 
+        question: "27. Si sobraron salchichas del día anterior debo de utilizarla de qué forma:", 
+        options: [
+            "a) Son las primeras que utilizo desde la apertura", 
+            "b) Las utilizo en las horas rush calentándolas en el microondas", 
+            "c) Las utilizo en las horas rush poniéndolas a calentar en un recipiente dentro del warmer de pan", 
+            "d) Las utilizo solo cuando el cliente pide una salchicha bien cocida"
+        ], 
+        correctAnswer: "c) Las utilizo en las horas rush poniéndolas a calentar en un recipiente dentro del warmer de pan" 
+    },
+    { 
+        question: "28. La temperatura del Warmer debe indicar como mínimo lo siguiente:", 
+        options: ["a) 30°C", "b) 55°C", "c) 25°C"], 
+        correctAnswer: "b) 55°C" 
+    },
+    { 
+        question: "29. Las palomitas cheddar se deben espolvorear la siguiente cantidad de veces:", 
+        options: [
+            "a) 8, 5, 5 y el resto de saborizante.", 
+            "b) 8, 5, 3 y el resto de saborizante.", 
+            "c) 5, 5, 3 y el resto de saborizante."
+        ], 
+        correctAnswer: "a) 8, 5, 5 y el resto de saborizante."
+    }
+];
+
+    function displayQuestions() {
+      shuffleArray(questions);
+      var questionsContainer = document.getElementById("questions-container");
+      questionsContainer.innerHTML = '';
+
+      questions.forEach((question, index) => {
+        shuffleArray(question.options);
+        var questionElement = document.createElement("div");
+        questionElement.className = "question";
+        questionElement.setAttribute("data-correct-answer", question.correctAnswer);
+        
+        var questionText = document.createElement("p");
+        questionText.textContent = question.question;
+        questionElement.appendChild(questionText);
+
+        var optionsContainer = document.createElement("div");
+        optionsContainer.className = "options-container";
+
+        question.options.forEach(option => {
+          var optionLabel = document.createElement("label");
+          var optionInput = document.createElement("input");
+          optionInput.type = "radio";
+          optionInput.name = "question" + index;
+          optionInput.value = option;
+          optionLabel.appendChild(optionInput);
+          optionLabel.appendChild(document.createTextNode(option));
+          optionsContainer.appendChild(optionLabel);
+        });
+
+        questionElement.appendChild(optionsContainer);
+        questionsContainer.appendChild(questionElement);
+      });
+    }
+
+    function startTimer() {
+      var timerElement = document.getElementById("timer");
+      var seconds = 300;
+      timerElement.textContent = seconds;
+      var timerInterval = setInterval(function () {
+        seconds--;
+        timerElement.textContent = seconds;
+
+        if (seconds === 0) {
+          clearInterval(timerInterval);
+          timerElement.textContent = "Tiempo agotado";
+          disableQuestions();
+        }
+      }, 1000);
+    }
+
+    function disableQuestions() {
+      var questions = document.getElementsByClassName("question");
+      for (let i = 0; i < questions.length; i++) {
+        var options = questions[i].getElementsByTagName("input");
+        for (let j = 0; j < options.length; j++) {
+          options[j].disabled = true;
+        }
+      }
+    }
+
+    function exportPDF() {
+      var pdfContent = [];
+      var totalScore = 0;
+
+      var nombre = document.getElementById("nombre").value;
+      var area = document.getElementById("area").value;
+      var conjunto = document.getElementById("conjunto").value;
+
+      pdfContent.push({ text: "Nombre: " + nombre });
+      pdfContent.push({ text: "Área: " + area });
+      pdfContent.push({ text: "Conjunto: " + conjunto });
+
+      var currentDate = new Date();
+      var formattedDate = currentDate.toLocaleDateString();
+      var formattedTime = currentDate.toLocaleTimeString();
+      pdfContent.push({ text: "Fecha y hora de exportación: " + formattedDate + " " + formattedTime });
+
+      var questions = document.getElementsByClassName("question");
+      for (let i = 0; i < questions.length; i++) {
+        var questionText = questions[i].querySelector("p").textContent;
+        var selectedOption = questions[i].querySelector('input[name="question' + i + '"]:checked');
+        var answerText = selectedOption ? selectedOption.value : "No respondida";
+        var correctAnswer = questions[i].getAttribute('data-correct-answer');
+
+        var isCorrect = selectedOption ? (selectedOption.value === correctAnswer) : false;
+
+        if (isCorrect) {
+          totalScore += 100 / questions.length; 
+        }
+
+        var color = isCorrect ? "#004d00" : "#8B0000";
+
+        var questionContent = [
+          { text: "Pregunta:", bold: true },
+          { text: questionText },
+          { text: "Tu respuesta:", bold: true },
+          { text: answerText, color: color },
+        ];
+
+        if (!isCorrect) {
+          questionContent.push({ text: "Respuesta correcta:", bold: true });
+          questionContent.push({ text: correctAnswer, color: "#004d00" });
+        }
+
+        questionContent.push({ text: "\n" });
+        pdfContent.push(questionContent);
+      }
+
+      totalScore = Math.round(totalScore);
+      pdfContent.unshift({ text: "Puntaje total: " + totalScore });
+
+      var docDefinition = {
+        content: [
+          { text: "Evaluación de conocimientos", style: "header" },
+          pdfContent
+        ]
+      };
+
+      pdfMake.createPdf(docDefinition).download();
+
+      // Deshabilitar las preguntas después de exportar el PDF
+      disableQuestions();
+    }
+  </script>
+</body>
+</html>
