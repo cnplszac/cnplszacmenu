@@ -55,17 +55,18 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            flex-wrap: wrap; /* Permitir que los elementos se ajusten */
+            flex-wrap: nowrap; /* Evitar que los elementos se ajusten a varias líneas */
+            overflow-x: auto; /* Permitir desplazamiento horizontal si es necesario */
         }
         .navbar li {
-            margin: 0 10px; /* Reduce el margen lateral */
+            margin: 0 10px; /* Espacio entre elementos */
         }
         .navbar a {
             color: #ffeb3b;
             text-decoration: none;
             font-size: 1.2em;
             transition: color 0.3s, transform 0.3s;
-            padding: 5px 10px; /* Añadir padding para evitar que se salgan */
+            padding: 5px 10px; /* Espacio adicional para evitar desbordamiento */
             white-space: nowrap; /* Evitar que el texto se divida */
         }
         .navbar a:hover {
