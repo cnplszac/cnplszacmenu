@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Evaluación de conocimientos</title>
+  <style>
+    body {
+      background-color: #000033;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .options-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    label {
+      display: inline-block;
+      padding: 10px;
+      background-color: #f9a825;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    label:hover {
+      background-color: #f57f17;
+    }
+
+    .result {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .authenticate-button,
+    .export-button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #2196F3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .authenticate-button:hover,
+    .export-button:hover {
+      background-color: #0b7dda;
+    }
+
+    .timer {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .header-image {
+      width: 20%;
+      max-width: 20%;
+      margin-bottom: 20px;
+    }
+
+    .auth-input {
+      display: block;
+      width: calc(25% - 40px);
+      margin: 0 auto 10px auto;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    #question-container input[type="text"] {
+      width: 28%;
+      margin-bottom: 10px;
+    }
+
+    #auth-container {
+      text-align: center;
+    }
+
+    .auth-label {
+      width: 150px;
+      display: inline-block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      background-color: #f9a825;
+      color: #fff;
+      border-radius: 4px;
+      padding: 10px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
+</head>
+<body>
+  <div class="container">
+    <img src="cn.jpg" alt="Encabezado" class="header-image">
+
+    <h1>Evaluación de conocimientos</h1>
+
+    <div id="auth-container">
+      <label class="auth-label" for="username">Usuario:</label>
+      <input class="auth-input" type="text" id="username" required>
+      <label class="auth-label" for="password">Contraseña:</label>
+      <input class="auth-input" type="password" id="password" required>
+      <button class="authenticate-button" onclick="authenticate()">Iniciar sesión</button>
+    </div>
+
+    <div style="display: none;" id="question-container">
+      <div>
+        <label class="auth-label" for="nombre">Nombre:</label>
+        <input class="auth-input" type="text" id="nombre" required>
+      </div>
+      <div>
+        <label class="auth-label" for="area">Área:</label>
+        <input class="auth-input" type="text" id="area" required>
+      </div>
+      <div>
+        <label class="auth-label" for="conjunto">Conjunto:</label>
+        <input class="auth-input" type="text" id="conjunto" required>
+      </div>
+
+      <div class="timer" id="timer">300</div>
+      <div id="questions-container"></div>
+      <div class="result" id="result"></div>
+      <button class="export-button" onclick="exportPDF()">Exportar a PDF</button>
+    </div>
+  </div>
+
+  <script>
+    function authenticate() {
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
+
+      if (username === "usuario" && password === "contraseña") {
+        document.getElementById("auth-container").style.display = "none";
+        document.getElementById("question-container").style.display = "block";
+        displayQuestions(); // Llama a la función para mostrar preguntas
+        startTimer(); // Inicia el temporizador
+      } else {
+        alert("Usuario o contraseña incorrectos");
+      }
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+  var questions = [
+    { 
+        question: "1. La cuadrilla de limpieza debe ingresar a la sala ___ minutos antes de que termine la función para llevar a cabo la limpieza.", 
+        options: [
+            "a) 5", 
+            "b) 10", 
+            "c) 15", 
+            "d) 20"
+        ], 
+        correctAnswer: "b) 10" 
+    },
+    { 
+        question: "2. Es el responsable de mantener limpia el área del lobby durante la operación:", 
+        options: [
+            "a) Encargado de limpieza de lobby", 
+            "b) Taquilleros", 
+            "c) Líder de cuadrilla", 
+            "d) Supervisor de limpieza"
+        ], 
+        correctAnswer: "a) Encargado de limpieza de lobby" 
+    },
+    { 
+        question: "3. La limpieza de los baños entre funciones se realiza ___.", 
+        options: [
+            "a) 20 Min.", 
+            "b) 30 Min.", 
+            "c) 40 Min.", 
+            "d) Continuamente, no hay un tiempo definido"
+        ], 
+        correctAnswer: "a) 20 Min." 
+    },
+    { 
+        question: "4. ¿Qué elementos es necesario romper antes de tirar al bote de basura en el área de salas?", 
+        options: [
+            "a) Vasos y Blister", 
+            "b) Canastas y Botellas de Aguas", 
+            "c) Vasos y Cajas", 
+            "d) Canastas y Vasos"
+        ], 
+        correctAnswer: "d) Canastas y Vasos" 
+    },
+    { 
+        question: "5. Es el trapo que se utiliza para limpiar los pasamanos de las salas.", 
+        options: [
+            "a) Amarillo", 
+            "b) Azul", 
+            "c) Blanco", 
+            "d) Verde"
+        ], 
+        correctAnswer: "b) Azul" 
+    },
+    { 
+        question: "6. En la limpieza de la sala se debe revisar que los botes medianos del foro no rebasen el ___% de su capacidad.", 
+        options: [
+            "a) 25", 
+            "b) 50", 
+            "c) 75", 
+            "d) 100"
+        ], 
+        correctAnswer: "b) 50" 
+    },
+    { 
+        question: "7. Si es necesario realizar la limpieza de los trípticos, éstos se deben rociar:", 
+        options: [
+            "a) Limpiador Multisuperficies Citrus", 
+            "b) Únicamente agua", 
+            "c) Sanitizante", 
+            "d) Quita Grasa"
+        ], 
+        correctAnswer: "a) Limpiador Multisuperficies Citrus" 
+    },
+    { 
+        question: "8. Si se encuentra un objeto extraviado durante la limpieza de las salas, entregarlo al:", 
+        options: [
+            "a) Gerente del Conjunto", 
+            "b) Módulo de atención a clientes", 
+            "c) Líder de cuadrilla", 
+            "d) Personal de seguridad"
+        ], 
+        correctAnswer: "b) Módulo de atención a clientes" 
+    },
+    { 
+        question: "9. Los lavamanos (baño) se deben limpiar con el trapo:", 
+        options: [
+            "a) Trapo amarillo #1", 
+            "b) Trapo azul #2", 
+            "c) Trapo Amarillo #2", 
+            "d) Papel toalla"
+        ], 
+        correctAnswer: "b) Trapo azul #2" 
+    },
+    { 
+        question: "10. Utensilio que se utiliza para lavar las charolas.", 
+        options: [
+            "a) Fibra esponja", 
+            "b) Fibra gruesa", 
+            "c) Fibra Metálica", 
+            "d) Trapo Blanco"
+        ], 
+        correctAnswer: "a) Fibra esponja" 
+    },
+    { 
+        question: "11. La habilitación de salas y pasillos, se debe realizar ___ minutos antes de la salida de la primera función.", 
+        options: [
+            "a) 15", 
+            "b) 20", 
+            "c) 25", 
+            "d) 30"
+        ], 
+        correctAnswer: "d) 30" 
+    },
+    { 
+        question: "12. Si una butaca se encuentra en mal estado o muy sucia, se deberá ___ y avisar por radio al Supervisor de limpieza:", 
+        options: [
+            "a) Hacer caso omiso", 
+            "b) Avisar a cada cliente", 
+            "c) Avisar que la función tarde", 
+            "d) Cubrirla con una bolsa negra"
+        ], 
+        correctAnswer: "d) Cubrirla con una bolsa negra" 
+    },
+    { 
+        question: "13. Los botes pequeños de basura de los sanitarios nunca deben de estar a más del ___% de su capacidad.", 
+        options: [
+            "a) 25", 
+            "b) 50", 
+            "c) 75", 
+            "d) 30"
+        ], 
+        correctAnswer: "a) 25" 
+    },
+    { 
+        question: "14. Si se detecta una taza tapada se debe notificar al:", 
+        options: [
+            "a) Encargado de baños", 
+            "b) Encargado de Mantenimiento", 
+            "c) Líder de cuadrilla", 
+            "d) Supervisor de limpieza"
+        ], 
+        correctAnswer: "b) Encargado de Mantenimiento" 
+    },
+    { 
+        question: "15. ¿Cada cuánto tiempo un administrativo debe validar las condiciones del baño con respecto a la bitácora de baños?", 
+        options: [
+            "a) 30 min", 
+            "b) 1 Hora", 
+            "c) 15 Min", 
+            "d) 2 Horas"
+        ], 
+        correctAnswer: "b) 1 Hora" 
+    },
+    { 
+        question: "16. El rodapié de los pasillos se deben secar con:", 
+        options: [
+            "a) Papel toalla", 
+            "b) Trapeador", 
+            "c) Trapo azul", 
+            "d) Trapo amarillo"
+        ], 
+        correctAnswer: "c) Trapo azul" 
+    },
+    { 
+        question: "17. Los botes de basura grandes del conjunto se deben de lavar:", 
+        options: [
+            "a) Diariamente", 
+            "b) Semanalmente", 
+            "c) 2 Veces por semana", 
+            "d) Mensualmente"
+        ], 
+        correctAnswer: "c) 2 Veces por semana" 
+    },
+    { 
+        question: "18. En la limpieza de lobby durante la operación debo de mantener el piso del área limpio únicamente utilizando:", 
+        options: [
+            "a) Trapeador Húmedo", 
+            "b) Mopa Limpia y Seca", 
+            "c) Trapeador y Multiusos", 
+            "d) Mopa Húmeda"
+        ], 
+        correctAnswer: "b) Mopa Limpia y Seca" 
+    },
+    { 
+        question: "19. En la limpieza de sala se deberán destruir las canastas para palomas y vasos para refresco.", 
+        options: [
+            "(v)", 
+            "(F)"
+        ], 
+        correctAnswer: "(v)" 
+    },
+    { 
+        question: "20. Durante la limpieza de la sala, si al llenar la bitácora correspondiente alguno de los puntos revisados no fue ejecutado correctamente, solicitarle a la cuadrilla de limpieza que vuelva a realizar esa actividad.", 
+        options: [
+            "(v)", 
+            "(F)"
+        ], 
+        correctAnswer: "(v)" 
+    },
+    { 
+        question: "21. Por ningún motivo, la bitácora que se utiliza durante la limpieza de los baños entre funciones se debe encontrar a la vista de los clientes.", 
+        options: [
+            "(v)", 
+            "(F)"
+        ], 
+        correctAnswer: "(v)" 
+    },
+    { 
+        question: "22. Los utensilios de limpieza (Escoba, Trapeador, Cubetas, Recogedor) se deben de lavar diariamente.", 
+        options: [
+            "(v)", 
+            "(F)"
+        ], 
+        correctAnswer: "(v)" 
+    },
+    { 
+        question: "23. Para la limpieza de salas, el cinepolito debe dirigirse a la salida de la sala y colocar un bote de basura y una cubeta para recibir charolas y despedir a los clientes en cuanto comiencen a proyectarse los créditos de la película.", 
+        options: [
+            "(v)", 
+            "(F)"
+        ], 
+        correctAnswer: "(F)" 
+    },
+    { 
+        question: "24. El kit de limpieza para la habilitación de lobby incluye un mopa.", 
+        options: [
+            "(v)", 
+            "(F)"
+        ], 
+        correctAnswer: "(v)" 
+    },
+    { 
+        question: "25. Si las mamparas no están limpias, rociar limpiador y secarlos con trapo amarillo #1.", 
+        options: [
+            "(v)", 
+            "(F)"
+        ], 
+        correctAnswer: "(v)" 
+    },
+    { 
+        question: "26. Cuando entramos a la sala después de que salen los clientes y encendemos las luces debemos de primero ir a las butacas con un balde y una bolsa y hacer 3 acciones antes de sacar las bandejas, menciónelas: 3 puntos", 
+        options: [
+            "a) Retirar líquidos, romper canasta, romper vasos", 
+            "b) Barrera, romper canastas, romper vasos", 
+            "c) Retirar líquidos, limpiar butacas, romper vasos"
+        ], 
+        correctAnswer: "a) Retirar líquidos, romper canasta, romper vasos" 
+    },
+    { 
+        question: "27. En qué lugar de la sala se deben de colocar las charolas (bandejas) o asientos de niño, después de apiladas:", 
+        options: [
+            "a) A la par del carrito en el piso tachón", 
+            "b) Encima de la butaca", 
+            "c) Atrás de la pantalla"
+        ], 
+        correctAnswer: "a) A la par del carrito en el piso tachón" 
+    },
+    { 
+        question: "28. Si se encuentran objetos extraviados en la sala, dónde se deben de llevar y cuál es el proceso:", 
+        options: [
+            "a) Se entrega al Gerente", 
+            "b) Se lleva al MAC (Módulo de atención al cliente)", 
+            "c) Se deja en arquilla"
+        ], 
+        correctAnswer: "b) Se lleva al MAC (Módulo de atención al cliente)" 
+    },
+    { 
+        question: "29. Mencione los dos químicos que se deben de usar para el proceso de limpieza de charolas cuando están muy sucias:", 
+        options: [
+            "a) Suma Eden, Break up", 
+            "b) Break up, Virex", 
+            "c) Break up, Final Step"
+        ], 
+        correctAnswer: "c) Break up, Final Step" 
+    }
+];
+
+    function displayQuestions() {
+      shuffleArray(questions);
+      var questionsContainer = document.getElementById("questions-container");
+      questionsContainer.innerHTML = '';
+
+      questions.forEach((question, index) => {
+        shuffleArray(question.options);
+        var questionElement = document.createElement("div");
+        questionElement.className = "question";
+        questionElement.setAttribute("data-correct-answer", question.correctAnswer);
+        
+        var questionText = document.createElement("p");
+        questionText.textContent = question.question;
+        questionElement.appendChild(questionText);
+
+        var optionsContainer = document.createElement("div");
+        optionsContainer.className = "options-container";
+
+        question.options.forEach(option => {
+          var optionLabel = document.createElement("label");
+          var optionInput = document.createElement("input");
+          optionInput.type = "radio";
+          optionInput.name = "question" + index;
+          optionInput.value = option;
+          optionLabel.appendChild(optionInput);
+          optionLabel.appendChild(document.createTextNode(option));
+          optionsContainer.appendChild(optionLabel);
+        });
+
+        questionElement.appendChild(optionsContainer);
+        questionsContainer.appendChild(questionElement);
+      });
+    }
+
+    function startTimer() {
+      var timerElement = document.getElementById("timer");
+      var seconds = 300;
+      timerElement.textContent = seconds;
+      var timerInterval = setInterval(function () {
+        seconds--;
+        timerElement.textContent = seconds;
+
+        if (seconds === 0) {
+          clearInterval(timerInterval);
+          timerElement.textContent = "Tiempo agotado";
+          disableQuestions();
+        }
+      }, 1000);
+    }
+
+    function disableQuestions() {
+      var questions = document.getElementsByClassName("question");
+      for (let i = 0; i < questions.length; i++) {
+        var options = questions[i].getElementsByTagName("input");
+        for (let j = 0; j < options.length; j++) {
+          options[j].disabled = true;
+        }
+      }
+    }
+
+    function exportPDF() {
+      var pdfContent = [];
+      var totalScore = 0;
+
+      var nombre = document.getElementById("nombre").value;
+      var area = document.getElementById("area").value;
+      var conjunto = document.getElementById("conjunto").value;
+
+      pdfContent.push({ text: "Nombre: " + nombre });
+      pdfContent.push({ text: "Área: " + area });
+      pdfContent.push({ text: "Conjunto: " + conjunto });
+
+      var currentDate = new Date();
+      var formattedDate = currentDate.toLocaleDateString();
+      var formattedTime = currentDate.toLocaleTimeString();
+      pdfContent.push({ text: "Fecha y hora de exportación: " + formattedDate + " " + formattedTime });
+
+      var questions = document.getElementsByClassName("question");
+      for (let i = 0; i < questions.length; i++) {
+        var questionText = questions[i].querySelector("p").textContent;
+        var selectedOption = questions[i].querySelector('input[name="question' + i + '"]:checked');
+        var answerText = selectedOption ? selectedOption.value : "No respondida";
+        var correctAnswer = questions[i].getAttribute('data-correct-answer');
+
+        var isCorrect = selectedOption ? (selectedOption.value === correctAnswer) : false;
+
+        if (isCorrect) {
+          totalScore += 100 / questions.length; 
+        }
+
+        var color = isCorrect ? "#004d00" : "#8B0000";
+
+        var questionContent = [
+          { text: "Pregunta:", bold: true },
+          { text: questionText },
+          { text: "Tu respuesta:", bold: true },
+          { text: answerText, color: color },
+        ];
+
+        if (!isCorrect) {
+          questionContent.push({ text: "Respuesta correcta:", bold: true });
+          questionContent.push({ text: correctAnswer, color: "#004d00" });
+        }
+
+        questionContent.push({ text: "\n" });
+        pdfContent.push(questionContent);
+      }
+
+      totalScore = Math.round(totalScore);
+      pdfContent.unshift({ text: "Puntaje total: " + totalScore });
+
+      var docDefinition = {
+        content: [
+          { text: "Evaluación de conocimientos", style: "header" },
+          pdfContent
+        ]
+      };
+
+      pdfMake.createPdf(docDefinition).download();
+
+      // Deshabilitar las preguntas después de exportar el PDF
+      disableQuestions();
+    }
+  </script>
+</body>
+</html>
