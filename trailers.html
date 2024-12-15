@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproductor de Videos</title>
+    <script>
+        let inactivityTimer;
+
+        // Verificar si el usuario ha iniciado sesión
+        function isLoggedIn() {
+            // Aquí puedes implementar la lógica de verificación de inicio de sesión
+            return true; // Cambiar a la lógica real de verificación de inicio de sesión
+        }
+
+        // Redireccionar a la página de inicio de sesión
+        function redirectToLogin() {
+            window.location.href = "https://cnplszac.github.io/cinepolitos"; // Cambia a tu página de login
+        }
+
+        // Reiniciar el temporizador de inactividad
+        function resetTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(redirectToLogin, 10000); // Redirigir después de 10 segundos
+        }
+
+        // Comprobar acceso al cargar la página
+        function checkAccess() {
+            if (!isLoggedIn()) {
+                redirectToLogin();
+            } else {
+                resetTimer(); // Iniciar el temporizador de inactividad
+            }
+        }
+
+        // Configurar eventos para detectar actividad del usuario
+        window.onload = () => {
+            checkAccess();
+            document.addEventListener('mousemove', resetTimer);
+            document.addEventListener('keypress', resetTimer);
+            document.addEventListener('click', resetTimer);
+        };
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden; /* Evita el desplazamiento horizontal */
+        }
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .navbar ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .navbar li {
+            margin: 0 15px;
+        }
+        .navbar a {
+            color: #ffeb3b;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: color 0.3s, transform 0.3s;
+            display: inline-block; /* Asegura que la transformación funcione correctamente */
+        }
+        .navbar a:hover {
+            color: #fff;
+            transform: scale(1.2); /* Aumentar el tamaño al pasar el mouse */
+        }
+        h1, .title {
+            text-align: center;
+            transition: transform 0.3s, color 0.3s;
+        }
+        h1 {
+            font-size: 2.5em;
+            animation: fadeIn 1s forwards;
+            margin-bottom: 30px;
+        }
+        h1:hover {
+            transform: scale(1.2); /* Aumentar el tamaño del título al pasar el mouse */
+            color: #ffeb3b; /* Cambiar color al pasar el mouse */
+        }
+        .coming-soon {
+            font-size: 1.8em;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 1s ease;
+        }
+        .video {
+            margin: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s;
+            width: 100%; 
+            max-width: 560px; /* Ancho máximo para los videos */
+        }
+        .video:hover {
+            transform: scale(1.05);
+        }
+        .title {
+            font-size: 1.5em;
+            margin: 10px 0;
+            opacity: 0;
+            animation: fadeInUp 0.5s forwards;
+            text-align: center;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        /* Efecto al pasar el mouse en el título */
+        .title:hover {
+            color: #ffeb3b; /* Cambia el color al pasar el mouse */
+            transform: scale(1.1); /* Aumenta el tamaño */
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <ul>
+            <li><a href="menu.html">Inicio</a></li>
+            <li><a href="promos.html">Promociones</a></li>
+            <li><a href="auditoria.html">Capturar Auditoría</a></li>
+            <li><a href="trailers.html">Trailers</a></li>
+        </ul>
+    </div>
+    <h1 class="coming-soon">Próximamente</h1>
+    <div class="container">
+        <div class="video">
+            <iframe width="100%" height="315" src="https://www.youtube.com/embed/jYGUYAaqmlU" frameborder="0" allowfullscreen></iframe>
+            <div class="title">Mufasa: El Rey León</div>
+        </div>
+        <div class="video">
+            <iframe width="100%" height="315" src="https://www.youtube.com/embed/ySkQCd7UOhk" frameborder="0" allowfullscreen></iframe>
+            <div class="title">Sonic 3 La Película</div>
+        </div>
+        <div class="video">
+            <iframe width="100%" height="315" src="https://www.youtube.com/embed/RXoqRPP-y5c" frameborder="0" allowfullscreen></iframe>
+            <div class="title">Capitán América: Un Nuevo Mundo</div>
+        </div>
+    </div>
+</body>
+</html>
