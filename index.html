@@ -16,6 +16,7 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
             padding: 0;
         }
         .container {
@@ -33,18 +34,28 @@
             width: 100%;
             padding: 12px;
             margin: 10px 0;
+            border: none;
             border-radius: 5px;
             font-size: 16px;
+            resize: none;
             background: rgba(255, 255, 255, 0.9);
             color: #333;
+            transition: 0.3s;
         }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.7);
+        }
+        textarea { min-height: 100px; }
         button {
             padding: 12px 20px;
             font-size: 16px;
             margin: 10px;
             cursor: pointer;
             background: #ff5e62;
+            border: none;
             border-radius: 5px;
+            transition: all 0.3s;
             color: white;
         }
         button:hover {
@@ -70,19 +81,11 @@
             border-radius: 5px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
         }
-        .delete-btn {
-            margin-top: 10px;
-            padding: 5px 10px;
-            background-color: red;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Reporte de Trabajo2</h1>
+        <h1>Reporte de Trabajo</h1>
         <label>Nombre de quien reporta:</label>
         <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
         
@@ -118,10 +121,7 @@
         </div>
         
         <h3>Agregar evidencia (Máximo 3 imágenes)</h3>
-        <input type="file" id="evidencia1" accept="image/*" onchange="mostrarImagen(this, 1)">
-        <input type="file" id="evidencia2" accept="image/*" onchange="mostrarImagen(this, 2)">
-        <input type="file" id="evidencia3" accept="image/*" onchange="mostrarImagen(this, 3)">
-        
+        <input type="file" id="evidencia" accept="image/*" multiple>
         <div class="evidencia" id="evidenciasContainer"></div>
         
         <button onclick="descargarPDF()">Descargar Reporte</button>
@@ -133,19 +133,19 @@
             const ctx = canvas.getContext("2d");
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-
+        
         function mostrarCamposTestigo() {
             const testigoSelect = document.getElementById("testigoSelect");
             const testigoContainer = document.getElementById("testigoContainer");
             testigoContainer.style.display = testigoSelect.value === "si" ? "block" : "none";
         }
-
-        // Se asegura de que el evento touch funcione tanto en móviles como en PC
+        
         document.querySelectorAll("canvas").forEach(canvas => {
             const ctx = canvas.getContext("2d");
             let dibujando = false;
-
+            
             function iniciarDibujo(e) {
+                e.preventDefault();
                 dibujando = true;
                 ctx.beginPath();
                 const offsetX = e.offsetX || (e.touches ? e.touches[0].clientX : 0);
@@ -154,6 +154,7 @@
             }
 
             function dibujar(e) {
+                e.preventDefault();
                 if (dibujando) {
                     const offsetX = e.offsetX || (e.touches ? e.touches[0].clientX : 0);
                     const offsetY = e.offsetY || (e.touches ? e.touches[0].clientY : 0);
@@ -171,113 +172,73 @@
             canvas.addEventListener("mouseup", detenerDibujo);
             canvas.addEventListener("mouseleave", detenerDibujo);
 
-            // Soporte para dispositivos táctiles
             canvas.addEventListener("touchstart", iniciarDibujo);
             canvas.addEventListener("touchmove", dibujar);
             canvas.addEventListener("touchend", detenerDibujo);
             canvas.addEventListener("touchcancel", detenerDibujo);
-
-            // Agregar el listener para que se pueda firmar incluso cuando se desplaza la página
-            canvas.addEventListener("touchmove", function(e) {
-                e.preventDefault();
-                dibujar(e);
-            });
-
-            canvas.addEventListener("touchstart", function(e) {
-                e.preventDefault();
-                iniciarDibujo(e);
-            });
         });
-
-        // Función para mostrar imagen seleccionada
-        function mostrarImagen(input, num) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.id = "imagen" + num;
-                img.style.width = "100%";
-                img.style.maxWidth = "200px";
-                img.style.margin = "10px";
-                img.style.borderRadius = "5px";
-                img.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.3)";
-                
-                const deleteBtn = document.createElement("button");
-                deleteBtn.innerText = "Eliminar";
-                deleteBtn.classList.add("delete-btn");
-                deleteBtn.onclick = function() {
-                    eliminarImagen(img, deleteBtn);
-                };
-
-                const container = document.createElement("div");
-                container.appendChild(img);
-                container.appendChild(deleteBtn);
-                document.getElementById("evidenciasContainer").appendChild(container);
-            }
-            reader.readAsDataURL(file);
-        }
-
-        // Función para eliminar una imagen
-        function eliminarImagen(img, btn) {
-            img.remove();
-            btn.remove();
-        }
 
         function descargarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+
+            const nombreReporta = document.getElementById('quienReporta').value;
+            const nombreEmpleado = document.getElementById('nombre').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const fecha = document.getElementById('fecha').value;
             
-            doc.setFontSize(12);
-            let yPosition = 20;
+            doc.text(`Reporte de Trabajo`, 20, 20);
+            doc.text(`Fecha y Hora: ${fecha}`, 20, 30);
+            doc.text(`Nombre de quien reporta: ${nombreReporta}`, 20, 40);
+            doc.text(`Nombre del empleado: ${nombreEmpleado}`, 20, 50);
+            doc.text(`Descripción del trabajo:`, 20, 60);
+            doc.text(descripcion, 20, 70);
 
-            // Nombre de quien reporta
-            doc.text("Nombre de quien reporta:", 10, yPosition);
-            doc.text(document.getElementById("quienReporta").value, 10, yPosition + 10);
-            yPosition += 20;
+            // Firmas del Jefe Inmediato
+            doc.text('Firma del Jefe Inmediato:', 20, 100);
+            doc.addImage(document.getElementById('firmaSupervisor').toDataURL(), 'PNG', 20, 110, 50, 20);
 
-            // Nombre del empleado
-            doc.text("Nombre del empleado:", 10, yPosition);
-            doc.text(document.getElementById("nombre").value, 10, yPosition + 10);
-            yPosition += 20;
+            // Firma del Empleado
+            doc.text('Firma del Empleado:', 20, 140);
+            doc.addImage(document.getElementById('firmaEmpleado').toDataURL(), 'PNG', 20, 150, 50, 20);
 
-            // Fecha y Hora
-            doc.text("Fecha y Hora:", 10, yPosition);
-            doc.text(document.getElementById("fecha").value, 10, yPosition + 10);
-            yPosition += 20;
+            // Firmas del Testigo
+            const testigoSelect = document.getElementById('testigoSelect').value;
+            if (testigoSelect === 'si') {
+                const nombreTestigo = document.getElementById('nombreTestigo').value;
+                doc.text(`Nombre del Testigo: ${nombreTestigo}`, 20, 180);
+                doc.text('Firma del Testigo:', 20, 190);
+                doc.addImage(document.getElementById('firmaTestigo').toDataURL(), 'PNG', 20, 200, 50, 20);
+            }
 
-            // Descripción del trabajo
-            const descripcion = document.getElementById("descripcion").value;
-            const lines = doc.splitTextToSize(descripcion, 180);
-            doc.text("Descripción del trabajo:", 10, yPosition);
-            yPosition += 10;
-            doc.text(lines, 10, yPosition);
-            yPosition += lines.length * 6;
+            // Agregar las imágenes (evidencia)
+            const evidencias = document.getElementById('evidenciasContainer').children;
+            let imagenY = 230;
+            for (let i = 0; i < evidencias.length; i++) {
+                doc.addImage(evidencias[i].src, 'JPEG', 20, imagenY, 50, 50);
+                imagenY += 60;
+            }
 
-            // Firmas
-            doc.text("Firma del Jefe Inmediato", 10, yPosition);
-            doc.addImage(document.getElementById("firmaSupervisor"), "PNG", 10, yPosition + 5, 50, 20);
-            yPosition += 30;
-            doc.text("Firma del Empleado", 10, yPosition);
-            doc.addImage(document.getElementById("firmaEmpleado"), "PNG", 10, yPosition + 5, 50, 20);
-            yPosition += 30;
-
-            // Agregar imágenes de evidencia
-            const evidencias = document.querySelectorAll(".evidencia img");
-            evidencias.forEach((img, index) => {
-                if (index < 3) {
-                    doc.addImage(img.src, "PNG", 10, yPosition, 50, 50);
-                    yPosition += 60;
-                }
-            });
-
-            doc.save("reporte_trabajo.pdf");
+            // Guardar el archivo PDF
+            doc.save('reporte_trabajo.pdf');
         }
 
         function finalizarReporte() {
-            alert("Reporte finalizado");
+            alert('Reporte finalizado');
             location.reload();
         }
+
+        // Función para cargar las imágenes de evidencia
+        document.getElementById('evidencia').addEventListener('change', function(event) {
+            const files = event.target.files;
+            const container = document.getElementById('evidenciasContainer');
+            container.innerHTML = ''; // Limpiar las imágenes previas
+            for (let i = 0; i < files.length; i++) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(files[i]);
+                container.appendChild(img);
+            }
+        });
     </script>
 </body>
 </html>
