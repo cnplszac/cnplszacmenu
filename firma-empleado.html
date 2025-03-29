@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firmar Empleado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+        }
+        canvas {
+            border: 2px solid white;
+            background: white;
+            touch-action: none;
+            border-radius: 5px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            background: #ff5e62;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+            color: white;
+        }
+        button:hover {
+            background: #ff9966;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Firma del Empleado</h1>
+        <canvas id="firmaEmpleado" width="300" height="100"></canvas>
+        <button onclick="limpiarFirma()">Limpiar Firma</button>
+        <button onclick="guardarFirma()">Guardar Firma</button>
+        <button onclick="window.location.href='index.html'">Regresar</button>
+    </div>
+
+    <script>
+        let firmaEmpleadoCanvas = document.getElementById("firmaEmpleado");
+        let ctx = firmaEmpleadoCanvas.getContext("2d");
+        let dibujando = false;
+
+        function iniciarFirma(e) {
+            e.preventDefault();
+            dibujando = true;
+            ctx.beginPath();
+            const offsetX = e.offsetX || (e.touches ? e.touches[0].clientX : 0);
+            const offsetY = e.offsetY || (e.touches ? e.touches[0].clientY : 0);
+            ctx.moveTo(offsetX - firmaEmpleadoCanvas.offsetLeft, offsetY - firmaEmpleadoCanvas.offsetTop);
+        }
+
+        function dibujarFirma(e) {
+            e.preventDefault();
+            if (dibujando) {
+                const offsetX = e.offsetX || (e.touches ? e.touches[0].clientX : 0);
+                const offsetY = e.offsetY || (e.touches ? e.touches[0].clientY : 0);
+                ctx.lineTo(offsetX - firmaEmpleadoCanvas.offsetLeft, offsetY - firmaEmpleadoCanvas.offsetTop);
+                ctx.stroke();
+            }
+        }
+
+        function detenerFirma() {
+            dibujando = false;
+        }
+
+        function limpiarFirma() {
+            ctx.clearRect(0, 0, firmaEmpleadoCanvas.width, firmaEmpleadoCanvas.height);
+        }
+
+        function guardarFirma() {
+            const firmaDataUrl = firmaEmpleadoCanvas.toDataURL();
+            // Puedes almacenar la firma para su uso posterior, por ejemplo, en un formulario o base de datos.
+            console.log("Firma Empleado guardada:", firmaDataUrl);
+        }
+
+        firmaEmpleadoCanvas.addEventListener("mousedown", iniciarFirma);
+        firmaEmpleadoCanvas.addEventListener("mousemove", dibujarFirma);
+        firmaEmpleadoCanvas.addEventListener("mouseup", detenerFirma);
+        firmaEmpleadoCanvas.addEventListener("mouseleave", detenerFirma);
+
+        firmaEmpleadoCanvas.addEventListener("touchstart", iniciarFirma);
+        firmaEmpleadoCanvas.addEventListener("touchmove", dibujarFirma);
+        firmaEmpleadoCanvas.addEventListener("touchend", detenerFirma);
+        firmaEmpleadoCanvas.addEventListener("touchcancel", detenerFirma);
+    </script>
+</body>
+</html>
