@@ -139,48 +139,38 @@
             testigoContainer.style.display = testigoSelect.value === "si" ? "block" : "none";
         }
 
-        // Manejo de eventos para el canvas, tanto en dispositivos móviles como PC
-        function iniciarDibujo(canvas) {
+        document.querySelectorAll("canvas").forEach(canvas => {
             const ctx = canvas.getContext("2d");
             let dibujando = false;
 
-            const empezarDibujo = (e) => {
+            function iniciarDibujo(e) {
                 dibujando = true;
-                const x = e.offsetX || e.touches[0].clientX - canvas.offsetLeft;
-                const y = e.offsetY || e.touches[0].clientY - canvas.offsetTop;
                 ctx.beginPath();
-                ctx.moveTo(x, y);
-            };
+                ctx.moveTo(e.offsetX || e.touches[0].offsetX, e.offsetY || e.touches[0].offsetY);
+            }
 
-            const dibujar = (e) => {
+            function dibujar(e) {
                 if (dibujando) {
-                    const x = e.offsetX || e.touches[0].clientX - canvas.offsetLeft;
-                    const y = e.offsetY || e.touches[0].clientY - canvas.offsetTop;
-                    ctx.lineTo(x, y);
+                    ctx.lineTo(e.offsetX || e.touches[0].offsetX, e.offsetY || e.touches[0].offsetY);
                     ctx.stroke();
                 }
-            };
+            }
 
-            const finalizarDibujo = () => {
+            function detenerDibujo() {
                 dibujando = false;
-            };
+            }
 
-            const cancelarDibujo = () => {
-                dibujando = false;
-            };
-
-            canvas.addEventListener("mousedown", empezarDibujo);
+            canvas.addEventListener("mousedown", iniciarDibujo);
             canvas.addEventListener("mousemove", dibujar);
-            canvas.addEventListener("mouseup", finalizarDibujo);
-            canvas.addEventListener("mouseleave", cancelarDibujo);
-            canvas.addEventListener("touchstart", empezarDibujo);
-            canvas.addEventListener("touchmove", dibujar);
-            canvas.addEventListener("touchend", finalizarDibujo);
-            canvas.addEventListener("touchcancel", cancelarDibujo);
-        }
+            canvas.addEventListener("mouseup", detenerDibujo);
+            canvas.addEventListener("mouseleave", detenerDibujo);
 
-        // Inicializamos los canvas para firmas
-        document.querySelectorAll("canvas").forEach(canvas => iniciarDibujo(canvas));
+            // Soporte para dispositivos táctiles
+            canvas.addEventListener("touchstart", iniciarDibujo);
+            canvas.addEventListener("touchmove", dibujar);
+            canvas.addEventListener("touchend", detenerDibujo);
+            canvas.addEventListener("touchcancel", detenerDibujo);
+        });
 
         // Función para mostrar imagen seleccionada
         function mostrarImagen(input, num) {
@@ -231,16 +221,19 @@
             doc.text("Nombre del empleado: " + document.getElementById("nombre").value, 10, yPosition);
             yPosition += 10;
             doc.text("Fecha y Hora: " + document.getElementById("fecha").value, 10, yPosition);
-            yPosition += 10;
-            doc.text("Descripción del trabajo: " + document.getElementById("descripcion").value, 10, yPosition);
-            yPosition += 20;
 
-            // Firma del Jefe
+            // Ajuste para la Descripción del trabajo
+            const descripcion = document.getElementById("descripcion").value;
+            const lines = doc.splitTextToSize(descripcion, 180);
+            doc.text("Descripción del trabajo:", 10, yPosition);
+            yPosition += 10;
+            doc.text(lines, 10, yPosition);
+            yPosition += lines.length * 6; // Ajuste según la longitud de la descripción
+
+            // Firmas
             doc.text("Firma del Jefe Inmediato", 10, yPosition);
             doc.addImage(document.getElementById("firmaSupervisor"), "PNG", 10, yPosition + 5, 50, 20);
             yPosition += 30;
-
-            // Firma del Empleado
             doc.text("Firma del Empleado", 10, yPosition);
             doc.addImage(document.getElementById("firmaEmpleado"), "PNG", 10, yPosition + 5, 50, 20);
             yPosition += 30;
@@ -251,3 +244,16 @@
                 if (index < 3) {
                     doc.addImage(img.src, "PNG", 10, yPosition, 50, 50);
                     yPosition += 60;
+                }
+            });
+
+            doc.save("reporte_trabajo.pdf");
+        }
+
+        function finalizarReporte() {
+            alert("Reporte finalizado");
+            location.reload();
+        }
+    </script>
+</body>
+</html>
