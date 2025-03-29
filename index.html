@@ -16,7 +16,6 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden;
             padding: 0;
         }
         .container {
@@ -34,28 +33,18 @@
             width: 100%;
             padding: 12px;
             margin: 10px 0;
-            border: none;
             border-radius: 5px;
             font-size: 16px;
-            resize: none;
             background: rgba(255, 255, 255, 0.9);
             color: #333;
-            transition: 0.3s;
         }
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.7);
-        }
-        textarea { min-height: 100px; }
         button {
             padding: 12px 20px;
             font-size: 16px;
             margin: 10px;
             cursor: pointer;
             background: #ff5e62;
-            border: none;
             border-radius: 5px;
-            transition: all 0.3s;
             color: white;
         }
         button:hover {
@@ -79,6 +68,14 @@
             margin: 10px;
             border-radius: 5px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .delete-btn {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: red;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -120,11 +117,13 @@
         </div>
         
         <h3>Agregar evidencia (Máximo 3 imágenes)</h3>
-        <input type="file" id="evidencia" accept="image/*" multiple>
+        <input type="file" id="evidencia1" accept="image/*" onchange="mostrarImagen(this, 1)">
+        <input type="file" id="evidencia2" accept="image/*" onchange="mostrarImagen(this, 2)">
+        <input type="file" id="evidencia3" accept="image/*" onchange="mostrarImagen(this, 3)">
+        
         <div class="evidencia" id="evidenciasContainer"></div>
         
         <button onclick="descargarPDF()">Descargar Reporte</button>
-        <button onclick="editarReporte()">Editar Reporte</button>
         <button onclick="finalizarReporte()">Finalizar Reporte</button>
     </div>
     <script>
@@ -133,22 +132,13 @@
             const ctx = canvas.getContext("2d");
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-        
+
         function mostrarCamposTestigo() {
             const testigoSelect = document.getElementById("testigoSelect");
             const testigoContainer = document.getElementById("testigoContainer");
             testigoContainer.style.display = testigoSelect.value === "si" ? "block" : "none";
         }
-        
-        function editarReporte() {
-            alert("Ahora puedes editar el reporte.");
-        }
-        
-        function finalizarReporte() {
-            alert("Reporte finalizado");
-            location.reload();
-        }
-        
+
         document.querySelectorAll("canvas").forEach(canvas => {
             const ctx = canvas.getContext("2d");
             let dibujando = false;
@@ -169,6 +159,88 @@
             canvas.addEventListener("mouseup", () => dibujando = false);
             canvas.addEventListener("mouseleave", () => dibujando = false);
         });
+
+        // Función para mostrar imagen seleccionada
+        function mostrarImagen(input, num) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.id = "imagen" + num;
+                img.style.width = "100%";
+                img.style.maxWidth = "200px";
+                img.style.margin = "10px";
+                img.style.borderRadius = "5px";
+                img.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.3)";
+                
+                const deleteBtn = document.createElement("button");
+                deleteBtn.innerText = "Eliminar";
+                deleteBtn.classList.add("delete-btn");
+                deleteBtn.onclick = function() {
+                    eliminarImagen(img, deleteBtn);
+                };
+
+                const container = document.createElement("div");
+                container.appendChild(img);
+                container.appendChild(deleteBtn);
+                document.getElementById("evidenciasContainer").appendChild(container);
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // Función para eliminar una imagen
+        function eliminarImagen(img, btn) {
+            img.remove();
+            btn.remove();
+        }
+
+        function descargarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(12);
+            let yPosition = 10;
+
+            doc.text("Reporte de Trabajo", 10, yPosition);
+            yPosition += 10;
+            doc.text("Nombre de quien reporta: " + document.getElementById("quienReporta").value, 10, yPosition);
+            yPosition += 10;
+            doc.text("Nombre del empleado: " + document.getElementById("nombre").value, 10, yPosition);
+            yPosition += 10;
+            doc.text("Fecha y Hora: " + document.getElementById("fecha").value, 10, yPosition);
+
+            // Ajuste para la Descripción del trabajo
+            const descripcion = document.getElementById("descripcion").value;
+            const lines = doc.splitTextToSize(descripcion, 180); // Ajusta el tamaño del texto a un ancho de 180mm
+            yPosition += 10;
+            doc.text(lines, 10, yPosition);
+            yPosition += lines.length * 6;
+
+            // Firmas
+            doc.text("Firma del Jefe Inmediato", 10, yPosition);
+            doc.addImage(document.getElementById("firmaSupervisor"), "PNG", 10, yPosition + 5, 50, 20);
+            yPosition += 30;
+            doc.text("Firma del Empleado", 10, yPosition);
+            doc.addImage(document.getElementById("firmaEmpleado"), "PNG", 10, yPosition + 5, 50, 20);
+            yPosition += 30;
+
+            // Agregar imágenes de evidencia
+            const evidencias = document.querySelectorAll(".evidencia img");
+            evidencias.forEach((img, index) => {
+                if (index < 3) {
+                    doc.addImage(img.src, "PNG", 10, yPosition, 50, 50);
+                    yPosition += 60;
+                }
+            });
+
+            doc.save("reporte_trabajo.pdf");
+        }
+
+        function finalizarReporte() {
+            alert("Reporte finalizado");
+            location.reload();
+        }
     </script>
 </body>
 </html>
