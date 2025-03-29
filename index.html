@@ -143,21 +143,34 @@
             const ctx = canvas.getContext("2d");
             let dibujando = false;
             
-            canvas.addEventListener("mousedown", (e) => {
+            // Detectar el inicio de la firma
+            const startDrawing = (e) => {
                 dibujando = true;
                 ctx.beginPath();
-                ctx.moveTo(e.offsetX, e.offsetY);
-            });
-            
-            canvas.addEventListener("mousemove", (e) => {
+                ctx.moveTo(e.offsetX || e.touches[0].clientX - canvas.offsetLeft, e.offsetY || e.touches[0].clientY - canvas.offsetTop);
+            };
+
+            // Dibujar
+            const draw = (e) => {
                 if (dibujando) {
-                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.lineTo(e.offsetX || e.touches[0].clientX - canvas.offsetLeft, e.offsetY || e.touches[0].clientY - canvas.offsetTop);
                     ctx.stroke();
                 }
-            });
+            };
+
+            // Detener la firma
+            const stopDrawing = () => dibujando = false;
+
+            // Detectar mouse y tactil
+            canvas.addEventListener("mousedown", startDrawing);
+            canvas.addEventListener("mousemove", draw);
+            canvas.addEventListener("mouseup", stopDrawing);
+            canvas.addEventListener("mouseleave", stopDrawing);
             
-            canvas.addEventListener("mouseup", () => dibujando = false);
-            canvas.addEventListener("mouseleave", () => dibujando = false);
+            canvas.addEventListener("touchstart", startDrawing);
+            canvas.addEventListener("touchmove", draw);
+            canvas.addEventListener("touchend", stopDrawing);
+            canvas.addEventListener("touchcancel", stopDrawing);
         });
 
         // Función para mostrar imagen seleccionada
@@ -212,15 +225,14 @@
 
             // Ajuste para la Descripción del trabajo
             const descripcion = document.getElementById("descripcion").value;
-            const lines = doc.splitTextToSize(descripcion, 180); // Ajusta el tamaño del texto a un ancho de 180mm
-            yPosition += 10;
+            const lines = doc.splitTextToSize(descripcion, 180);
             doc.text(lines, 10, yPosition);
-            yPosition += lines.length * 6;
+            yPosition += lines.length * 10;
 
-            // Firmas
             doc.text("Firma del Jefe Inmediato", 10, yPosition);
             doc.addImage(document.getElementById("firmaSupervisor"), "PNG", 10, yPosition + 5, 50, 20);
             yPosition += 30;
+
             doc.text("Firma del Empleado", 10, yPosition);
             doc.addImage(document.getElementById("firmaEmpleado"), "PNG", 10, yPosition + 5, 50, 20);
             yPosition += 30;
