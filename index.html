@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Trabajo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            padding: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            overflow-y: auto;
+            height: 100%;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            transition: 0.3s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.7);
+        }
+        textarea { min-height: 100px; }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            background: #ff5e62;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+            color: white;
+        }
+        button:hover {
+            background: #ff9966;
+            transform: scale(1.05);
+        }
+        canvas {
+            border: 2px solid white;
+            background: white;
+            touch-action: none;
+            border-radius: 5px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .hidden { display: none; }
+        .evidencia {
+            margin-top: 20px;
+        }
+        .evidencia img {
+            width: 100%;
+            max-width: 200px;
+            margin: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reporte de Trabajo</h1>
+        <label>Nombre de quien reporta:</label>
+        <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
+        
+        <label>Nombre del empleado:</label>
+        <input type="text" id="nombre" placeholder="Ingrese nombre del empleado">
+        
+        <label>Fecha y Hora:</label>
+        <input type="datetime-local" id="fecha">
+        
+        <label>Descripción del trabajo:</label>
+        <textarea id="descripcion" placeholder="Ingrese detalles"></textarea>
+        
+        <h3>Firma del Jefe Inmediato</h3>
+        <canvas id="firmaSupervisor" width="300" height="100"></canvas>
+        <button onclick="limpiarCanvas('firmaSupervisor')">Limpiar Firma</button>
+        
+        <h3>Firma del Empleado</h3>
+        <canvas id="firmaEmpleado" width="300" height="100"></canvas>
+        <button onclick="limpiarCanvas('firmaEmpleado')">Limpiar Firma</button>
+        
+        <label>¿Hay testigo en el reporte?</label>
+        <select id="testigoSelect" onchange="mostrarCamposTestigo()">
+            <option value="no">No</option>
+            <option value="si">Sí</option>
+        </select>
+
+        <div id="testigoContainer" style="display: none;">
+            <label>Nombre del Testigo:</label>
+            <input type="text" id="nombreTestigo" placeholder="Ingrese nombre del testigo">
+            <h3>Firma del Testigo</h3>
+            <canvas id="firmaTestigo" width="300" height="100"></canvas>
+            <button onclick="limpiarCanvas('firmaTestigo')">Limpiar Firma</button>
+        </div>
+        
+        <h3>Agregar evidencia (Máximo 3 imágenes)</h3>
+        <input type="file" id="evidencia" accept="image/*" multiple>
+        <div class="evidencia" id="evidenciasContainer"></div>
+        
+        <button onclick="descargarPDF()">Descargar Reporte</button>
+        <button onclick="editarReporte()">Editar Reporte</button>
+        <button onclick="finalizarReporte()">Finalizar Reporte</button>
+    </div>
+    <script>
+        function limpiarCanvas(id) {
+            const canvas = document.getElementById(id);
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function mostrarCamposTestigo() {
+            const testigoSelect = document.getElementById("testigoSelect");
+            const testigoContainer = document.getElementById("testigoContainer");
+            testigoContainer.style.display = testigoSelect.value === "si" ? "block" : "none";
+        }
+        
+        function editarReporte() {
+            alert("Ahora puedes editar el reporte.");
+        }
+        
+        function finalizarReporte() {
+            alert("Reporte finalizado");
+            location.reload();
+        }
+        
+        document.querySelectorAll("canvas").forEach(canvas => {
+            const ctx = canvas.getContext("2d");
+            let dibujando = false;
+            
+            canvas.addEventListener("mousedown", (e) => {
+                dibujando = true;
+                ctx.beginPath();
+                ctx.moveTo(e.offsetX, e.offsetY);
+            });
+            
+            canvas.addEventListener("mousemove", (e) => {
+                if (dibujando) {
+                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.stroke();
+                }
+            });
+            
+            canvas.addEventListener("mouseup", () => dibujando = false);
+            canvas.addEventListener("mouseleave", () => dibujando = false);
+        });
+    </script>
+</body>
+</html>
