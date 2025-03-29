@@ -57,6 +57,8 @@
             touch-action: none;
             border-radius: 5px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            z-index: 100;
         }
         .hidden { display: none; }
         .evidencia {
@@ -77,11 +79,28 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        .firma-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 999;
+            display: none;
+        }
+        .firma-container canvas {
+            margin-top: 10px;
+        }
+        .firma-container button {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Reporte de Trabajo</h1>
+        <h1>Reporte de Trabajo2</h1>
         <label>Nombre de quien reporta:</label>
         <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
         
@@ -99,28 +118,7 @@
         <button onclick="abrirFirma('firmaEmpleado')">Firmar Empleado</button>
         <button onclick="abrirFirma('firmaTestigo')">Firmar Testigo</button>
 
-        <!-- Espacios de firma ocultos inicialmente -->
-        <div id="firmaSupervisorContainer" class="hidden">
-            <h3>Firma del Jefe Inmediato</h3>
-            <canvas id="firmaSupervisor" width="300" height="100"></canvas>
-            <button onclick="limpiarCanvas('firmaSupervisor')">Limpiar Firma</button>
-            <button onclick="guardarFirma('firmaSupervisor')">Guardar Firma</button>
-        </div>
-
-        <div id="firmaEmpleadoContainer" class="hidden">
-            <h3>Firma del Empleado</h3>
-            <canvas id="firmaEmpleado" width="300" height="100"></canvas>
-            <button onclick="limpiarCanvas('firmaEmpleado')">Limpiar Firma</button>
-            <button onclick="guardarFirma('firmaEmpleado')">Guardar Firma</button>
-        </div>
-
-        <div id="firmaTestigoContainer" class="hidden">
-            <h3>Firma del Testigo</h3>
-            <canvas id="firmaTestigo" width="300" height="100"></canvas>
-            <button onclick="limpiarCanvas('firmaTestigo')">Limpiar Firma</button>
-            <button onclick="guardarFirma('firmaTestigo')">Guardar Firma</button>
-        </div>
-
+        <!-- Campo de selección para testigo -->
         <label>¿Hay testigo en el reporte?</label>
         <select id="testigoSelect" onchange="mostrarCamposTestigo()">
             <option value="no">No</option>
@@ -142,6 +140,29 @@
         <button onclick="descargarPDF()">Descargar Reporte</button>
         <button onclick="finalizarReporte()">Finalizar Reporte</button>
     </div>
+
+    <!-- Cuadro flotante para firmas -->
+    <div id="firmaSupervisorContainer" class="firma-container">
+        <h3>Firma del Jefe Inmediato</h3>
+        <canvas id="firmaSupervisor" width="300" height="100"></canvas>
+        <button onclick="limpiarCanvas('firmaSupervisor')">Limpiar Firma</button>
+        <button onclick="guardarFirma('firmaSupervisor')">Guardar Firma</button>
+    </div>
+
+    <div id="firmaEmpleadoContainer" class="firma-container">
+        <h3>Firma del Empleado</h3>
+        <canvas id="firmaEmpleado" width="300" height="100"></canvas>
+        <button onclick="limpiarCanvas('firmaEmpleado')">Limpiar Firma</button>
+        <button onclick="guardarFirma('firmaEmpleado')">Guardar Firma</button>
+    </div>
+
+    <div id="firmaTestigoContainer" class="firma-container">
+        <h3>Firma del Testigo</h3>
+        <canvas id="firmaTestigo" width="300" height="100"></canvas>
+        <button onclick="limpiarCanvas('firmaTestigo')">Limpiar Firma</button>
+        <button onclick="guardarFirma('firmaTestigo')">Guardar Firma</button>
+    </div>
+
     <script>
         function limpiarCanvas(id) {
             const canvas = document.getElementById(id);
@@ -200,7 +221,7 @@
 
         // Función para abrir el canvas de firma
         function abrirFirma(id) {
-            document.getElementById(id + "Container").classList.remove("hidden");
+            document.getElementById(id + "Container").style.display = 'block';
         }
 
         // Función para guardar la firma
@@ -209,6 +230,7 @@
             const dataURL = canvas.toDataURL();
             console.log('Firma guardada:', dataURL);
             alert('Firma guardada correctamente.');
+            document.getElementById(id + "Container").style.display = 'none'; // Ocultar el cuadro flotante
         }
 
         // Función para mostrar imagen seleccionada
@@ -270,35 +292,26 @@
 
             // Descripción del trabajo
             const descripcion = document.getElementById("descripcion").value;
-            const lines = doc.splitTextToSize(descripcion, 180);
             doc.text("Descripción del trabajo:", 10, yPosition);
-            yPosition += 10;
-            doc.text(lines, 10, yPosition);
-            yPosition += lines.length * 6;
+            doc.text(descripcion, 10, yPosition + 10);
+            yPosition += 20;
 
-            // Firmas
-            doc.text("Firma del Jefe Inmediato", 10, yPosition);
-            doc.addImage(document.getElementById("firmaSupervisor"), "PNG", 10, yPosition + 5, 50, 20);
-            yPosition += 30;
-            doc.text("Firma del Empleado", 10, yPosition);
-            doc.addImage(document.getElementById("firmaEmpleado"), "PNG", 10, yPosition + 5, 50, 20);
-            yPosition += 30;
-
-            // Agregar imágenes de evidencia
-            const evidencias = document.querySelectorAll(".evidencia img");
-            evidencias.forEach((img, index) => {
-                if (index < 3) {
-                    doc.addImage(img.src, "PNG", 10, yPosition, 50, 50);
+            // Imágenes
+            const images = document.getElementById("evidenciasContainer").getElementsByTagName("img");
+            if (images.length > 0) {
+                doc.text("Evidencias:", 10, yPosition);
+                yPosition += 10;
+                for (let i = 0; i < images.length; i++) {
+                    doc.addImage(images[i].src, 'JPEG', 10, yPosition, 50, 50);
                     yPosition += 60;
                 }
-            });
+            }
 
             doc.save("reporte_trabajo.pdf");
         }
 
         function finalizarReporte() {
-            alert("Reporte finalizado");
-            location.reload();
+            alert("Reporte finalizado!");
         }
     </script>
 </body>
