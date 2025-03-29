@@ -139,39 +139,48 @@
             testigoContainer.style.display = testigoSelect.value === "si" ? "block" : "none";
         }
 
-        document.querySelectorAll("canvas").forEach(canvas => {
+        // Manejo de eventos para el canvas, tanto en dispositivos móviles como PC
+        function iniciarDibujo(canvas) {
             const ctx = canvas.getContext("2d");
             let dibujando = false;
-            
-            // Detectar el inicio de la firma
-            const startDrawing = (e) => {
+
+            const empezarDibujo = (e) => {
                 dibujando = true;
+                const x = e.offsetX || e.touches[0].clientX - canvas.offsetLeft;
+                const y = e.offsetY || e.touches[0].clientY - canvas.offsetTop;
                 ctx.beginPath();
-                ctx.moveTo(e.offsetX || e.touches[0].clientX - canvas.offsetLeft, e.offsetY || e.touches[0].clientY - canvas.offsetTop);
+                ctx.moveTo(x, y);
             };
 
-            // Dibujar
-            const draw = (e) => {
+            const dibujar = (e) => {
                 if (dibujando) {
-                    ctx.lineTo(e.offsetX || e.touches[0].clientX - canvas.offsetLeft, e.offsetY || e.touches[0].clientY - canvas.offsetTop);
+                    const x = e.offsetX || e.touches[0].clientX - canvas.offsetLeft;
+                    const y = e.offsetY || e.touches[0].clientY - canvas.offsetTop;
+                    ctx.lineTo(x, y);
                     ctx.stroke();
                 }
             };
 
-            // Detener la firma
-            const stopDrawing = () => dibujando = false;
+            const finalizarDibujo = () => {
+                dibujando = false;
+            };
 
-            // Detectar mouse y tactil
-            canvas.addEventListener("mousedown", startDrawing);
-            canvas.addEventListener("mousemove", draw);
-            canvas.addEventListener("mouseup", stopDrawing);
-            canvas.addEventListener("mouseleave", stopDrawing);
-            
-            canvas.addEventListener("touchstart", startDrawing);
-            canvas.addEventListener("touchmove", draw);
-            canvas.addEventListener("touchend", stopDrawing);
-            canvas.addEventListener("touchcancel", stopDrawing);
-        });
+            const cancelarDibujo = () => {
+                dibujando = false;
+            };
+
+            canvas.addEventListener("mousedown", empezarDibujo);
+            canvas.addEventListener("mousemove", dibujar);
+            canvas.addEventListener("mouseup", finalizarDibujo);
+            canvas.addEventListener("mouseleave", cancelarDibujo);
+            canvas.addEventListener("touchstart", empezarDibujo);
+            canvas.addEventListener("touchmove", dibujar);
+            canvas.addEventListener("touchend", finalizarDibujo);
+            canvas.addEventListener("touchcancel", cancelarDibujo);
+        }
+
+        // Inicializamos los canvas para firmas
+        document.querySelectorAll("canvas").forEach(canvas => iniciarDibujo(canvas));
 
         // Función para mostrar imagen seleccionada
         function mostrarImagen(input, num) {
@@ -222,17 +231,16 @@
             doc.text("Nombre del empleado: " + document.getElementById("nombre").value, 10, yPosition);
             yPosition += 10;
             doc.text("Fecha y Hora: " + document.getElementById("fecha").value, 10, yPosition);
+            yPosition += 10;
+            doc.text("Descripción del trabajo: " + document.getElementById("descripcion").value, 10, yPosition);
+            yPosition += 20;
 
-            // Ajuste para la Descripción del trabajo
-            const descripcion = document.getElementById("descripcion").value;
-            const lines = doc.splitTextToSize(descripcion, 180);
-            doc.text(lines, 10, yPosition);
-            yPosition += lines.length * 10;
-
+            // Firma del Jefe
             doc.text("Firma del Jefe Inmediato", 10, yPosition);
             doc.addImage(document.getElementById("firmaSupervisor"), "PNG", 10, yPosition + 5, 50, 20);
             yPosition += 30;
 
+            // Firma del Empleado
             doc.text("Firma del Empleado", 10, yPosition);
             doc.addImage(document.getElementById("firmaEmpleado"), "PNG", 10, yPosition + 5, 50, 20);
             yPosition += 30;
@@ -243,16 +251,3 @@
                 if (index < 3) {
                     doc.addImage(img.src, "PNG", 10, yPosition, 50, 50);
                     yPosition += 60;
-                }
-            });
-
-            doc.save("reporte_trabajo.pdf");
-        }
-
-        function finalizarReporte() {
-            alert("Reporte finalizado");
-            location.reload();
-        }
-    </script>
-</body>
-</html>
