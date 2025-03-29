@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Trabajo touch</title>
+    <title>Reporte de Trabajo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
@@ -81,7 +81,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Reporte de Trabajo touc</h1>
+        <h1>Reporte de Trabajo</h1>
         <label>Nombre de quien reporta:</label>
         <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
         
@@ -139,6 +139,7 @@
             testigoContainer.style.display = testigoSelect.value === "si" ? "block" : "none";
         }
 
+        // Se asegura de que el evento touch funcione tanto en móviles como en PC
         document.querySelectorAll("canvas").forEach(canvas => {
             const ctx = canvas.getContext("2d");
             let dibujando = false;
@@ -146,12 +147,16 @@
             function iniciarDibujo(e) {
                 dibujando = true;
                 ctx.beginPath();
-                ctx.moveTo(e.offsetX || e.touches[0].offsetX, e.offsetY || e.touches[0].offsetY);
+                const offsetX = e.offsetX || (e.touches ? e.touches[0].clientX : 0);
+                const offsetY = e.offsetY || (e.touches ? e.touches[0].clientY : 0);
+                ctx.moveTo(offsetX - canvas.offsetLeft, offsetY - canvas.offsetTop);
             }
 
             function dibujar(e) {
                 if (dibujando) {
-                    ctx.lineTo(e.offsetX || e.touches[0].offsetX, e.offsetY || e.touches[0].offsetY);
+                    const offsetX = e.offsetX || (e.touches ? e.touches[0].clientX : 0);
+                    const offsetY = e.offsetY || (e.touches ? e.touches[0].clientY : 0);
+                    ctx.lineTo(offsetX - canvas.offsetLeft, offsetY - canvas.offsetTop);
                     ctx.stroke();
                 }
             }
@@ -212,23 +217,30 @@
             const doc = new jsPDF();
             
             doc.setFontSize(12);
-            let yPosition = 10;
+            let yPosition = 20;
 
-            doc.text("Reporte de Trabajo", 10, yPosition);
-            yPosition += 10;
-            doc.text("Nombre de quien reporta: " + document.getElementById("quienReporta").value, 10, yPosition);
-            yPosition += 10;
-            doc.text("Nombre del empleado: " + document.getElementById("nombre").value, 10, yPosition);
-            yPosition += 10;
-            doc.text("Fecha y Hora: " + document.getElementById("fecha").value, 10, yPosition);
+            // Nombre de quien reporta
+            doc.text("Nombre de quien reporta:", 10, yPosition);
+            doc.text(document.getElementById("quienReporta").value, 10, yPosition + 10);
+            yPosition += 20;
 
-            // Ajuste para la Descripción del trabajo
+            // Nombre del empleado
+            doc.text("Nombre del empleado:", 10, yPosition);
+            doc.text(document.getElementById("nombre").value, 10, yPosition + 10);
+            yPosition += 20;
+
+            // Fecha y Hora
+            doc.text("Fecha y Hora:", 10, yPosition);
+            doc.text(document.getElementById("fecha").value, 10, yPosition + 10);
+            yPosition += 20;
+
+            // Descripción del trabajo
             const descripcion = document.getElementById("descripcion").value;
             const lines = doc.splitTextToSize(descripcion, 180);
             doc.text("Descripción del trabajo:", 10, yPosition);
             yPosition += 10;
             doc.text(lines, 10, yPosition);
-            yPosition += lines.length * 6; // Ajuste según la longitud de la descripción
+            yPosition += lines.length * 6;
 
             // Firmas
             doc.text("Firma del Jefe Inmediato", 10, yPosition);
