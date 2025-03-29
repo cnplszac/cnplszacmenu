@@ -81,7 +81,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Reporte de Trabajo2</h1>
+        <h1>Reporte de Trabajo</h1>
         <label>Nombre de quien reporta:</label>
         <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
         
@@ -176,6 +176,11 @@
             canvas.addEventListener("touchmove", dibujar);
             canvas.addEventListener("touchend", detenerDibujo);
             canvas.addEventListener("touchcancel", detenerDibujo);
+
+            // Hacer que el canvas no pierda el contexto al hacer scroll
+            canvas.addEventListener("touchmove", function (event) {
+                event.preventDefault();
+            }, { passive: false });
         }
 
         // Llamamos a la función para cada canvas
