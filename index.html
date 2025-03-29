@@ -100,7 +100,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Reporte de Trabajo2</h1>
+        <h1>Reporte de Trabajo</h1>
         <label>Nombre de quien reporta:</label>
         <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
         
@@ -147,6 +147,7 @@
         <canvas id="firmaSupervisor" width="300" height="100"></canvas>
         <button onclick="limpiarCanvas('firmaSupervisor')">Limpiar Firma</button>
         <button onclick="guardarFirma('firmaSupervisor')">Guardar Firma</button>
+        <button onclick="cerrarFirma('firmaSupervisor')">Cerrar</button>
     </div>
 
     <div id="firmaEmpleadoContainer" class="firma-container">
@@ -154,6 +155,7 @@
         <canvas id="firmaEmpleado" width="300" height="100"></canvas>
         <button onclick="limpiarCanvas('firmaEmpleado')">Limpiar Firma</button>
         <button onclick="guardarFirma('firmaEmpleado')">Guardar Firma</button>
+        <button onclick="cerrarFirma('firmaEmpleado')">Cerrar</button>
     </div>
 
     <div id="firmaTestigoContainer" class="firma-container">
@@ -161,6 +163,7 @@
         <canvas id="firmaTestigo" width="300" height="100"></canvas>
         <button onclick="limpiarCanvas('firmaTestigo')">Limpiar Firma</button>
         <button onclick="guardarFirma('firmaTestigo')">Guardar Firma</button>
+        <button onclick="cerrarFirma('firmaTestigo')">Cerrar</button>
     </div>
 
     <script>
@@ -170,10 +173,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        function mostrarCamposTestigo() {
-            const testigoSelect = document.getElementById("testigoSelect");
-            const testigoContainer = document.getElementById("testigoContainer");
-            testigoContainer.style.display = testigoSelect.value === "si" ? "block" : "none";
+        function cerrarFirma(id) {
+            document.getElementById(id + "Container").style.display = 'none';
         }
 
         function agregarEventosFirma(id) {
@@ -285,16 +286,37 @@
             doc.text(document.getElementById("nombre").value, 10, yPosition + 10);
             yPosition += 20;
 
-            // Fecha y Hora
-            doc.text("Fecha y Hora:", 10, yPosition);
+            // Fecha y hora
+            doc.text("Fecha y hora:", 10, yPosition);
             doc.text(document.getElementById("fecha").value, 10, yPosition + 10);
             yPosition += 20;
 
             // Descripción del trabajo
-            const descripcion = document.getElementById("descripcion").value;
             doc.text("Descripción del trabajo:", 10, yPosition);
-            doc.text(descripcion, 10, yPosition + 10);
+            doc.text(document.getElementById("descripcion").value, 10, yPosition + 10);
             yPosition += 20;
+
+            // Firmas
+            const firmaSupervisor = document.getElementById("firmaSupervisor");
+            if (firmaSupervisor) {
+                const dataURL = firmaSupervisor.toDataURL();
+                doc.addImage(dataURL, 'PNG', 10, yPosition, 60, 30);
+                yPosition += 40;
+            }
+
+            const firmaEmpleado = document.getElementById("firmaEmpleado");
+            if (firmaEmpleado) {
+                const dataURL = firmaEmpleado.toDataURL();
+                doc.addImage(dataURL, 'PNG', 10, yPosition, 60, 30);
+                yPosition += 40;
+            }
+
+            const firmaTestigo = document.getElementById("firmaTestigo");
+            if (firmaTestigo) {
+                const dataURL = firmaTestigo.toDataURL();
+                doc.addImage(dataURL, 'PNG', 10, yPosition, 60, 30);
+                yPosition += 40;
+            }
 
             // Imágenes
             const images = document.getElementById("evidenciasContainer").getElementsByTagName("img");
