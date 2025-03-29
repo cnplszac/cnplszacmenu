@@ -54,7 +54,7 @@
         canvas {
             border: 2px solid white;
             background: white;
-            touch-action: none;
+            touch-action: none; /* Evita interferencia con el desplazamiento */
             border-radius: 5px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
         }
@@ -81,7 +81,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Reporte de Trabajo</h1>
+        <h1>Reporte de Trabajo2</h1>
         <label>Nombre de quien reporta:</label>
         <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
         
@@ -117,10 +117,7 @@
         </div>
         
         <h3>Agregar evidencia (Máximo 3 imágenes)</h3>
-        <input type="file" id="evidencia1" accept="image/*" onchange="mostrarImagen(this, 1)">
-        <input type="file" id="evidencia2" accept="image/*" onchange="mostrarImagen(this, 2)">
-        <input type="file" id="evidencia3" accept="image/*" onchange="mostrarImagen(this, 3)">
-        
+        <input type="file" id="evidencia" accept="image/*" multiple>
         <div class="evidencia" id="evidenciasContainer"></div>
         
         <button onclick="descargarPDF()">Descargar Reporte</button>
@@ -132,150 +129,85 @@
             const ctx = canvas.getContext("2d");
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-
+        
         function mostrarCamposTestigo() {
             const testigoSelect = document.getElementById("testigoSelect");
             const testigoContainer = document.getElementById("testigoContainer");
             testigoContainer.style.display = testigoSelect.value === "si" ? "block" : "none";
         }
 
-        // Se asegura de que el evento touch funcione tanto en móviles como en PC
-        function agregarEventosFirma(id) {
-            const canvas = document.getElementById(id);
+        document.querySelectorAll("canvas").forEach(canvas => {
             const ctx = canvas.getContext("2d");
             let dibujando = false;
-
-            function iniciarDibujo(e) {
+            
+            canvas.addEventListener("mousedown", (e) => {
                 dibujando = true;
                 ctx.beginPath();
-                const offsetX = e.offsetX || (e.touches ? e.touches[0].clientX : 0);
-                const offsetY = e.offsetY || (e.touches ? e.touches[0].clientY : 0);
-                ctx.moveTo(offsetX - canvas.offsetLeft, offsetY - canvas.offsetTop);
-            }
-
-            function dibujar(e) {
+                ctx.moveTo(e.offsetX, e.offsetY);
+            });
+            
+            canvas.addEventListener("mousemove", (e) => {
                 if (dibujando) {
-                    const offsetX = e.offsetX || (e.touches ? e.touches[0].clientX : 0);
-                    const offsetY = e.offsetY || (e.touches ? e.touches[0].clientY : 0);
-                    ctx.lineTo(offsetX - canvas.offsetLeft, offsetY - canvas.offsetTop);
+                    ctx.lineTo(e.offsetX, e.offsetY);
                     ctx.stroke();
                 }
-            }
-
-            function detenerDibujo() {
-                dibujando = false;
-            }
-
-            canvas.addEventListener("mousedown", iniciarDibujo);
-            canvas.addEventListener("mousemove", dibujar);
-            canvas.addEventListener("mouseup", detenerDibujo);
-            canvas.addEventListener("mouseleave", detenerDibujo);
-
-            // Soporte para dispositivos táctiles
-            canvas.addEventListener("touchstart", iniciarDibujo);
-            canvas.addEventListener("touchmove", dibujar);
-            canvas.addEventListener("touchend", detenerDibujo);
-            canvas.addEventListener("touchcancel", detenerDibujo);
-
-            // Hacer que el canvas no pierda el contexto al hacer scroll
-            canvas.addEventListener("touchmove", function (event) {
-                event.preventDefault();
-            }, { passive: false });
-        }
-
-        // Llamamos a la función para cada canvas
-        agregarEventosFirma('firmaSupervisor');
-        agregarEventosFirma('firmaEmpleado');
-        agregarEventosFirma('firmaTestigo');
-
-        // Función para mostrar imagen seleccionada
-        function mostrarImagen(input, num) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.id = "imagen" + num;
-                img.style.width = "100%";
-                img.style.maxWidth = "200px";
-                img.style.margin = "10px";
-                img.style.borderRadius = "5px";
-                img.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.3)";
-                
-                const deleteBtn = document.createElement("button");
-                deleteBtn.innerText = "Eliminar";
-                deleteBtn.classList.add("delete-btn");
-                deleteBtn.onclick = function() {
-                    eliminarImagen(img, deleteBtn);
-                };
-
-                const container = document.createElement("div");
-                container.appendChild(img);
-                container.appendChild(deleteBtn);
-                document.getElementById("evidenciasContainer").appendChild(container);
-            }
-            reader.readAsDataURL(file);
-        }
-
-        // Función para eliminar una imagen
-        function eliminarImagen(img, btn) {
-            img.remove();
-            btn.remove();
-        }
-
-        function descargarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            });
             
-            doc.setFontSize(12);
-            let yPosition = 20;
+            canvas.addEventListener("mouseup", () => dibujando = false);
+            canvas.addEventListener("mouseleave", () => dibujando = false);
 
-            // Nombre de quien reporta
-            doc.text("Nombre de quien reporta:", 10, yPosition);
-            doc.text(document.getElementById("quienReporta").value, 10, yPosition + 10);
-            yPosition += 20;
+            canvas.addEventListener("touchstart", (e) => {
+                dibujando = true;
+                const touch = e.touches[0];
+                ctx.beginPath();
+                ctx.moveTo(touch.offsetX, touch.offsetY);
+            });
 
-            // Nombre del empleado
-            doc.text("Nombre del empleado:", 10, yPosition);
-            doc.text(document.getElementById("nombre").value, 10, yPosition + 10);
-            yPosition += 20;
-
-            // Fecha y Hora
-            doc.text("Fecha y Hora:", 10, yPosition);
-            doc.text(document.getElementById("fecha").value, 10, yPosition + 10);
-            yPosition += 20;
-
-            // Descripción del trabajo
-            const descripcion = document.getElementById("descripcion").value;
-            const lines = doc.splitTextToSize(descripcion, 180);
-            doc.text("Descripción del trabajo:", 10, yPosition);
-            yPosition += 10;
-            doc.text(lines, 10, yPosition);
-            yPosition += lines.length * 6;
-
-            // Firmas
-            doc.text("Firma del Jefe Inmediato", 10, yPosition);
-            doc.addImage(document.getElementById("firmaSupervisor"), "PNG", 10, yPosition + 5, 50, 20);
-            yPosition += 30;
-            doc.text("Firma del Empleado", 10, yPosition);
-            doc.addImage(document.getElementById("firmaEmpleado"), "PNG", 10, yPosition + 5, 50, 20);
-            yPosition += 30;
-
-            // Agregar imágenes de evidencia
-            const evidencias = document.querySelectorAll(".evidencia img");
-            evidencias.forEach((img, index) => {
-                if (index < 3) {
-                    doc.addImage(img.src, "PNG", 10, yPosition, 50, 50);
-                    yPosition += 60;
+            canvas.addEventListener("touchmove", (e) => {
+                if (dibujando) {
+                    const touch = e.touches[0];
+                    ctx.lineTo(touch.offsetX, touch.offsetY);
+                    ctx.stroke();
                 }
             });
 
-            doc.save("reporte_trabajo.pdf");
-        }
+            canvas.addEventListener("touchend", () => dibujando = false);
+            canvas.addEventListener("touchcancel", () => dibujando = false);
+        });
 
         function finalizarReporte() {
             alert("Reporte finalizado");
-            location.reload();
+            window.location.reload();
+        }
+
+        function descargarPDF() {
+            const doc = new jsPDF();
+
+            doc.text(`Reporte de Trabajo`, 20, 20);
+            doc.text(`Nombre de quien reporta: ${document.getElementById('quienReporta').value}`, 20, 30);
+            doc.text(`Nombre del empleado: ${document.getElementById('nombre').value}`, 20, 40);
+            doc.text(`Fecha y Hora: ${document.getElementById('fecha').value}`, 20, 50);
+            doc.text(`Descripción del trabajo: ${document.getElementById('descripcion').value}`, 20, 60);
+
+            const canvasSupervisor = document.getElementById('firmaSupervisor');
+            const ctxSupervisor = canvasSupervisor.getContext("2d");
+            const imgDataSupervisor = canvasSupervisor.toDataURL("image/png");
+            doc.addImage(imgDataSupervisor, 'PNG', 20, 70, 100, 30);
+            
+            const canvasEmpleado = document.getElementById('firmaEmpleado');
+            const ctxEmpleado = canvasEmpleado.getContext("2d");
+            const imgDataEmpleado = canvasEmpleado.toDataURL("image/png");
+            doc.addImage(imgDataEmpleado, 'PNG', 20, 110, 100, 30);
+
+            const testigoSelect = document.getElementById('testigoSelect');
+            if (testigoSelect.value === "si") {
+                const canvasTestigo = document.getElementById('firmaTestigo');
+                const ctxTestigo = canvasTestigo.getContext("2d");
+                const imgDataTestigo = canvasTestigo.toDataURL("image/png");
+                doc.addImage(imgDataTestigo, 'PNG', 20, 150, 100, 30);
+            }
+
+            doc.save('reporte_trabajo.pdf');
         }
     </script>
 </body>
