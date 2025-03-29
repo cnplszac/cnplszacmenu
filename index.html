@@ -81,7 +81,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Reporte de Trabajo</h1>
+        <h1>Reporte de Trabajo2</h1>
         <label>Nombre de quien reporta:</label>
         <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
         
@@ -140,7 +140,8 @@
         }
 
         // Se asegura de que el evento touch funcione tanto en móviles como en PC
-        document.querySelectorAll("canvas").forEach(canvas => {
+        function agregarEventosFirma(id) {
+            const canvas = document.getElementById(id);
             const ctx = canvas.getContext("2d");
             let dibujando = false;
 
@@ -175,7 +176,12 @@
             canvas.addEventListener("touchmove", dibujar);
             canvas.addEventListener("touchend", detenerDibujo);
             canvas.addEventListener("touchcancel", detenerDibujo);
-        });
+        }
+
+        // Llamamos a la función para cada canvas
+        agregarEventosFirma('firmaSupervisor');
+        agregarEventosFirma('firmaEmpleado');
+        agregarEventosFirma('firmaTestigo');
 
         // Función para mostrar imagen seleccionada
         function mostrarImagen(input, num) {
