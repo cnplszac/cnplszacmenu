@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte de Trabajo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,15 +14,14 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            padding: 0;
+            padding: 20px;
         }
         .container {
             background: rgba(255, 255, 255, 0.2);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
             text-align: center;
             width: 80%;
             max-width: 600px;
@@ -34,10 +34,15 @@
             border: none;
             border-radius: 5px;
             font-size: 16px;
-            resize: none;
             background: rgba(255, 255, 255, 0.9);
             color: #333;
+            transition: 0.3s;
         }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.7);
+        }
+        textarea { min-height: 100px; }
         button {
             padding: 12px 20px;
             font-size: 16px;
@@ -53,32 +58,182 @@
             background: #ff9966;
             transform: scale(1.05);
         }
+        .evidencia img {
+            width: 100px;
+            margin: 5px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Reporte de Trabajo</h1>
+
         <label>Nombre de quien reporta:</label>
-        <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
-        
+        <input type="text" id="quienReporta" oninput="saveData()">
+
         <label>Nombre del empleado:</label>
-        <input type="text" id="nombre" placeholder="Ingrese nombre del empleado">
-        
+        <input type="text" id="nombreEmpleado" oninput="saveData()">
+
         <label>Fecha y Hora:</label>
-        <input type="datetime-local" id="fecha">
-        
+        <input type="datetime-local" id="fecha" oninput="saveData()">
+
         <label>Descripción del trabajo:</label>
-        <textarea id="descripcion" placeholder="Ingrese detalles"></textarea>
-        
+        <textarea id="descripcion" oninput="saveData()"></textarea>
+
+        <h3>Firma del Jefe Inmediato</h3>
+        <button onclick="window.location.href='firma-jefe.html'">Firmar</button>
+
+        <h3>Firma del Empleado</h3>
+        <button onclick="window.location.href='firma-empleado.html'">Firmar</button>
+
         <label>¿Hay testigo en el reporte?</label>
-        <select id="testigoSelect">
+        <select id="testigoSelect" onchange="toggleTestigo()">
             <option value="no">No</option>
             <option value="si">Sí</option>
         </select>
-        
-        <button onclick="window.location.href='firma-jefe.html'">Firmar Jefe</button>
-        <button onclick="window.location.href='firma-empleado.html'">Firmar Empleado</button>
-        <button onclick="window.location.href='firma-testigo.html'">Firmar Testigo</button>
+
+        <div id="testigoContainer" style="display: none;">
+            <label>Nombre del Testigo:</label>
+            <input type="text" id="nombreTestigo" oninput="saveData()">
+            <h3>Firma del Testigo</h3>
+            <button onclick="window.location.href='firma-testigo.html'">Firmar</button>
+        </div>
+
+        <h3>Agregar evidencia (Máximo 5 imágenes)</h3>
+        <input type="file" id="evidencia" accept="image/*" multiple onchange="saveData()">
+        <div class="evidencia" id="evidenciasContainer"></div>
+
+        <button onclick="descargarPDF()">Descargar Reporte</button>
+        <button onclick="finalizarReporte()">Finalizar Reporte</button>
     </div>
+
+    <script>
+        // Función para guardar datos en localStorage
+        function saveData() {
+            localStorage.setItem("quienReporta", document.getElementById("quienReporta").value);
+            localStorage.setItem("nombreEmpleado", document.getElementById("nombreEmpleado").value);
+            localStorage.setItem("fecha", document.getElementById("fecha").value);
+            localStorage.setItem("descripcion", document.getElementById("descripcion").value);
+            localStorage.setItem("testigoSelect", document.getElementById("testigoSelect").value);
+            localStorage.setItem("nombreTestigo", document.getElementById("nombreTestigo").value);
+
+            const evidencias = document.getElementById("evidencia").files;
+            let evidenciaData = [];
+            for (let i = 0; i < evidencias.length; i++) {
+                evidenciaData.push(URL.createObjectURL(evidencias[i]));
+            }
+            localStorage.setItem("evidencias", JSON.stringify(evidenciaData));
+
+            // Guardar las firmas
+            if (window.localStorage.getItem("firmaJefe")) {
+                localStorage.setItem("firmaJefe", window.localStorage.getItem("firmaJefe"));
+            }
+            if (window.localStorage.getItem("firmaEmpleado")) {
+                localStorage.setItem("firmaEmpleado", window.localStorage.getItem("firmaEmpleado"));
+            }
+            if (window.localStorage.getItem("firmaTestigo")) {
+                localStorage.setItem("firmaTestigo", window.localStorage.getItem("firmaTestigo"));
+            }
+        }
+
+        // Función para cargar datos de localStorage
+        window.onload = function() {
+            if (localStorage.getItem("quienReporta")) {
+                document.getElementById("quienReporta").value = localStorage.getItem("quienReporta");
+                document.getElementById("nombreEmpleado").value = localStorage.getItem("nombreEmpleado");
+                document.getElementById("fecha").value = localStorage.getItem("fecha");
+                document.getElementById("descripcion").value = localStorage.getItem("descripcion");
+                document.getElementById("testigoSelect").value = localStorage.getItem("testigoSelect");
+                document.getElementById("nombreTestigo").value = localStorage.getItem("nombreTestigo");
+
+                const evidencias = JSON.parse(localStorage.getItem("evidencias"));
+                const container = document.getElementById("evidenciasContainer");
+                container.innerHTML = "";
+                for (let i = 0; i < evidencias.length; i++) {
+                    let img = document.createElement("img");
+                    img.src = evidencias[i];
+                    container.appendChild(img);
+                }
+            }
+        };
+
+        // Función para manejar el testigo
+        function toggleTestigo() {
+            document.getElementById("testigoContainer").style.display = 
+                document.getElementById("testigoSelect").value === "si" ? "block" : "none";
+        }
+
+        // Función para descargar el PDF
+        function descargarPDF() {
+            const { jsPDF } = window.jspdf;
+            let doc = new jsPDF();
+            let y = 20;
+
+            doc.text("Reporte de Trabajo", 80, y);
+            y += 10;
+            doc.text(`Nombre de quien reporta: ${localStorage.getItem("quienReporta")}`, 20, y);
+            y += 10;
+            doc.text(`Empleado: ${localStorage.getItem("nombreEmpleado")}`, 20, y);
+            y += 10;
+            doc.text(`Fecha y Hora: ${localStorage.getItem("fecha")}`, 20, y);
+            y += 10;
+
+            let descripcion = localStorage.getItem("descripcion");
+            let splitText = doc.splitTextToSize(descripcion, 180);
+            doc.text("Descripción del trabajo:", 20, y);
+            y += 10;
+            doc.text(splitText, 20, y);
+            y += splitText.length * 10;
+
+            // Agregar firma de jefe
+            let firmaJefe = localStorage.getItem("firmaJefe");
+            if (firmaJefe) {
+                let img = new Image();
+                img.src = firmaJefe;
+                doc.text(`Firma Jefe: ${localStorage.getItem("quienReporta")}`, 20, y);
+                doc.addImage(img, "PNG", 20, y + 10, 80, 30);
+                y += 40;
+            }
+
+            // Agregar firma de empleado
+            let firmaEmpleado = localStorage.getItem("firmaEmpleado");
+            if (firmaEmpleado) {
+                let img = new Image();
+                img.src = firmaEmpleado;
+                doc.text(`Firma Empleado: ${localStorage.getItem("nombreEmpleado")}`, 20, y);
+                doc.addImage(img, "PNG", 20, y + 10, 80, 30);
+                y += 40;
+            }
+
+            // Agregar firma de testigo
+            if (localStorage.getItem("testigoSelect") === "si") {
+                let firmaTestigo = localStorage.getItem("firmaTestigo");
+                if (firmaTestigo) {
+                    let img = new Image();
+                    img.src = firmaTestigo;
+                    doc.text(`Firma Testigo: ${localStorage.getItem("nombreTestigo")}`, 20, y);
+                    doc.addImage(img, "PNG", 20, y + 10, 80, 30);
+                    y += 40;
+                }
+            }
+
+            // Agregar evidencias
+            const evidencias = JSON.parse(localStorage.getItem("evidencias"));
+            for (let i = 0; i < Math.min(evidencias.length, 5); i++) {
+                doc.addImage(evidencias[i], "JPEG", 20, y, 180, 120);
+                y += 130;
+            }
+
+            doc.save("reporte.pdf");
+        }
+
+        // Función para finalizar el reporte
+        function finalizarReporte() {
+            localStorage.clear();
+            location.reload();
+        }
+    </script>
+
 </body>
 </html>
