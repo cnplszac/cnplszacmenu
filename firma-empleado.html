@@ -30,16 +30,43 @@
             return evento.touches ? { x: evento.touches[0].clientX - rect.left, y: evento.touches[0].clientY - rect.top } : { x: evento.offsetX, y: evento.offsetY };
         }
 
-        function iniciarDibujo(evento) { dibujando = true; let { x, y } = getCoordenadas(evento); ctx.beginPath(); ctx.moveTo(x, y); evento.preventDefault(); }
-        function dibujar(evento) { if (!dibujando) return; let { x, y } = getCoordenadas(evento); ctx.lineTo(x, y); ctx.stroke(); evento.preventDefault(); }
-        function detenerDibujo() { dibujando = false; }
-        function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-        function guardarFirma() { localStorage.setItem("firmaEmpleado", canvas.toDataURL("image/png")); alert("Firma guardada correctamente."); window.location.href = "index.html"; }
+        function iniciarDibujo(evento) { 
+            dibujando = true; 
+            let { x, y } = getCoordenadas(evento); 
+            ctx.beginPath(); 
+            ctx.moveTo(x, y); 
+            evento.preventDefault(); 
+        }
 
+        function dibujar(evento) { 
+            if (!dibujando) return; 
+            let { x, y } = getCoordenadas(evento); 
+            ctx.lineTo(x, y); 
+            ctx.stroke(); 
+            evento.preventDefault(); 
+        }
+
+        function detenerDibujo() { 
+            dibujando = false; 
+        }
+
+        function limpiarFirma() { 
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+        }
+
+        function guardarFirma() { 
+            localStorage.setItem("firmaEmpleado", canvas.toDataURL("image/png")); 
+            alert("Firma guardada correctamente."); 
+            window.location.href = "index.html"; 
+        }
+
+        // Eventos para PC
         canvas.addEventListener("mousedown", iniciarDibujo);
         canvas.addEventListener("mousemove", dibujar);
         canvas.addEventListener("mouseup", detenerDibujo);
         canvas.addEventListener("mouseleave", detenerDibujo);
+
+        // Eventos para dispositivos táctiles
         canvas.addEventListener("touchstart", iniciarDibujo);
         canvas.addEventListener("touchmove", dibujar);
         canvas.addEventListener("touchend", detenerDibujo);
