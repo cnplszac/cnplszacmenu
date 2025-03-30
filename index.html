@@ -220,9 +220,23 @@
 
             // Agregar evidencias
             const evidencias = JSON.parse(localStorage.getItem("evidencias"));
+            const maxImagesPerPage = 5; // Limitar el número de imágenes por página
+            let imagesAdded = 0;
+            
             for (let i = 0; i < Math.min(evidencias.length, 5); i++) {
+                if (y > 270) {  // Si no hay suficiente espacio en la página actual, agregamos una nueva página
+                    doc.addPage();
+                    y = 20; // Resetear la posición Y a 20 en la nueva página
+                }
+                
                 doc.addImage(evidencias[i], "JPEG", 20, y, 180, 120);
-                y += 130;
+                y += 130; // Incrementar la posición Y para la siguiente imagen
+                imagesAdded++;
+            }
+
+            // Si se agregaron imágenes y no caben todas, agregar nuevas páginas
+            if (imagesAdded > maxImagesPerPage) {
+                doc.addPage();
             }
 
             doc.save("reporte.pdf");
@@ -234,6 +248,5 @@
             location.reload();
         }
     </script>
-
 </body>
 </html>
