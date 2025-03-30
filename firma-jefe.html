@@ -5,38 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firma del Jefe</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: linear-gradient(to right, #ff9966, #ff5e62);
-            color: white;
-            padding: 20px;
-        }
-        canvas {
-            border: 2px solid white;
-            background: white;
-            border-radius: 5px;
-        }
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            margin: 10px;
-            cursor: pointer;
-            background: #ff5e62;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            transition: all 0.3s;
-        }
-        button:hover {
-            background: #ff9966;
-            transform: scale(1.05);
-        }
+        body { font-family: Arial, sans-serif; text-align: center; background: linear-gradient(to right, #ff9966, #ff5e62); color: white; padding: 20px; }
+        canvas { border: 2px solid white; background: white; border-radius: 5px; touch-action: none; }
+        button { padding: 12px 20px; font-size: 16px; margin: 10px; cursor: pointer; background: #ff5e62; border: none; border-radius: 5px; color: white; transition: all 0.3s; }
+        button:hover { background: #ff9966; transform: scale(1.05); }
     </style>
 </head>
 <body>
 
-    <h1>Firma del Jefe</h1>
+    <h1>Firma del Jefe2</h1>
     <canvas id="firmaCanvas" width="300" height="100"></canvas>
     <br>
     <button onclick="limpiarFirma()">Limpiar Firma</button>
@@ -48,32 +25,24 @@
         let ctx = canvas.getContext("2d");
         let dibujando = false;
 
-        function limpiarFirma() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function getCoordenadas(evento) {
+            let rect = canvas.getBoundingClientRect();
+            return evento.touches ? { x: evento.touches[0].clientX - rect.left, y: evento.touches[0].clientY - rect.top } : { x: evento.offsetX, y: evento.offsetY };
         }
 
-        function guardarFirma() {
-            let firmaData = canvas.toDataURL("image/png");
-            localStorage.setItem("firmaJefe", firmaData); // Guardamos la firma en la clave "firmaJefe"
-            alert("Firma guardada correctamente.");
-            window.location.href = "index.html"; // Redirigir a index.html
-        }
+        function iniciarDibujo(evento) { dibujando = true; let { x, y } = getCoordenadas(evento); ctx.beginPath(); ctx.moveTo(x, y); evento.preventDefault(); }
+        function dibujar(evento) { if (!dibujando) return; let { x, y } = getCoordenadas(evento); ctx.lineTo(x, y); ctx.stroke(); evento.preventDefault(); }
+        function detenerDibujo() { dibujando = false; }
+        function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        function guardarFirma() { localStorage.setItem("firmaJefe", canvas.toDataURL("image/png")); alert("Firma guardada correctamente."); window.location.href = "index.html"; }
 
-        canvas.addEventListener("mousedown", (e) => {
-            dibujando = true;
-            ctx.beginPath();
-            ctx.moveTo(e.offsetX, e.offsetY);
-        });
-
-        canvas.addEventListener("mousemove", (e) => {
-            if (dibujando) {
-                ctx.lineTo(e.offsetX, e.offsetY);
-                ctx.stroke();
-            }
-        });
-
-        canvas.addEventListener("mouseup", () => dibujando = false);
-        canvas.addEventListener("mouseleave", () => dibujando = false);
+        canvas.addEventListener("mousedown", iniciarDibujo);
+        canvas.addEventListener("mousemove", dibujar);
+        canvas.addEventListener("mouseup", detenerDibujo);
+        canvas.addEventListener("mouseleave", detenerDibujo);
+        canvas.addEventListener("touchstart", iniciarDibujo);
+        canvas.addEventListener("touchmove", dibujar);
+        canvas.addEventListener("touchend", detenerDibujo);
     </script>
 
 </body>
