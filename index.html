@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Trabajo</title>
+    <title>Reporte de Trabajo con Firma</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
+        /* Estilos básicos */
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(to right, #ff9966, #ff5e62);
@@ -16,6 +17,7 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
             padding: 0;
         }
         .container {
@@ -33,18 +35,28 @@
             width: 100%;
             padding: 12px;
             margin: 10px 0;
+            border: none;
             border-radius: 5px;
             font-size: 16px;
+            resize: none;
             background: rgba(255, 255, 255, 0.9);
             color: #333;
+            transition: 0.3s;
         }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.7);
+        }
+        textarea { min-height: 100px; }
         button {
             padding: 12px 20px;
             font-size: 16px;
             margin: 10px;
             cursor: pointer;
             background: #ff5e62;
+            border: none;
             border-radius: 5px;
+            transition: all 0.3s;
             color: white;
         }
         button:hover {
@@ -69,24 +81,18 @@
             border-radius: 5px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
         }
-        .delete-btn {
-            margin-top: 10px;
-            padding: 5px 10px;
-            background-color: red;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Reporte de Trabajo</h1>
+
+        <!-- Formulario de Datos -->
         <label>Nombre de quien reporta:</label>
         <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
         
         <label>Nombre del empleado:</label>
-        <input type="text" id="nombre" placeholder="Ingrese nombre del empleado">
+        <input type="text" id="nombreEmpleado" placeholder="Ingrese nombre del empleado">
         
         <label>Fecha y Hora:</label>
         <input type="datetime-local" id="fecha">
@@ -94,159 +100,124 @@
         <label>Descripción del trabajo:</label>
         <textarea id="descripcion" placeholder="Ingrese detalles"></textarea>
         
-        <h3>Firma del Jefe Inmediato</h3>
-        <canvas id="firmaSupervisor" width="300" height="100"></canvas>
-        <button onclick="limpiarCanvas('firmaSupervisor')">Limpiar Firma</button>
-        
+        <!-- Canvas para Firmar -->
+        <h3>Firma del Jefe</h3>
+        <canvas id="firmaJefe" width="300" height="100"></canvas>
+        <button onclick="limpiarFirma('firmaJefe')">Limpiar Firma Jefe</button>
+
         <h3>Firma del Empleado</h3>
         <canvas id="firmaEmpleado" width="300" height="100"></canvas>
-        <button onclick="limpiarCanvas('firmaEmpleado')">Limpiar Firma</button>
-        
-        <label>¿Hay testigo en el reporte?</label>
-        <select id="testigoSelect" onchange="mostrarCamposTestigo()">
-            <option value="no">No</option>
-            <option value="si">Sí</option>
-        </select>
+        <button onclick="limpiarFirma('firmaEmpleado')">Limpiar Firma Empleado</button>
 
-        <div id="testigoContainer" style="display: none;">
-            <label>Nombre del Testigo:</label>
-            <input type="text" id="nombreTestigo" placeholder="Ingrese nombre del testigo">
-            <h3>Firma del Testigo</h3>
-            <canvas id="firmaTestigo" width="300" height="100"></canvas>
-            <button onclick="limpiarCanvas('firmaTestigo')">Limpiar Firma</button>
-        </div>
-        
-        <h3>Agregar evidencia (Máximo 3 imágenes)</h3>
-        <input type="file" id="evidencia1" accept="image/*" onchange="mostrarImagen(this, 1)">
-        <input type="file" id="evidencia2" accept="image/*" onchange="mostrarImagen(this, 2)">
-        <input type="file" id="evidencia3" accept="image/*" onchange="mostrarImagen(this, 3)">
-        
-        <div class="evidencia" id="evidenciasContainer"></div>
-        
-        <button onclick="descargarPDF()">Descargar Reporte</button>
-        <button onclick="finalizarReporte()">Finalizar Reporte</button>
+        <h3>Firma del Testigo</h3>
+        <canvas id="firmaTestigo" width="300" height="100"></canvas>
+        <button onclick="limpiarFirma('firmaTestigo')">Limpiar Firma Testigo</button>
+
+        <!-- Botón para generar PDF -->
+        <button onclick="guardarDatos()">Generar Reporte PDF</button>
     </div>
+
     <script>
-        function limpiarCanvas(id) {
-            const canvas = document.getElementById(id);
-            const ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Variables para los canvas de las firmas
+        let firmaJefeCanvas = document.getElementById('firmaJefe');
+        let firmaEmpleadoCanvas = document.getElementById('firmaEmpleado');
+        let firmaTestigoCanvas = document.getElementById('firmaTestigo');
+
+        // Obtener los contextos de los canvas para dibujar
+        let ctxJefe = firmaJefeCanvas.getContext('2d');
+        let ctxEmpleado = firmaEmpleadoCanvas.getContext('2d');
+        let ctxTestigo = firmaTestigoCanvas.getContext('2d');
+
+        // Variables para controlar si estamos dibujando
+        let dibujandoJefe = false;
+        let dibujandoEmpleado = false;
+        let dibujandoTestigo = false;
+
+        // Funciones para dibujar las firmas
+        function startDrawing(e, tipo) {
+            if (tipo === 'jefe') dibujandoJefe = true;
+            if (tipo === 'empleado') dibujandoEmpleado = true;
+            if (tipo === 'testigo') dibujandoTestigo = true;
+            let ctx = tipo === 'jefe' ? ctxJefe : tipo === 'empleado' ? ctxEmpleado : ctxTestigo;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
         }
 
-        function mostrarCamposTestigo() {
-            const testigoSelect = document.getElementById("testigoSelect");
-            const testigoContainer = document.getElementById("testigoContainer");
-            testigoContainer.style.display = testigoSelect.value === "si" ? "block" : "none";
+        function draw(e, tipo) {
+            if (tipo === 'jefe' && dibujandoJefe) drawOnCanvas(e, ctxJefe);
+            if (tipo === 'empleado' && dibujandoEmpleado) drawOnCanvas(e, ctxEmpleado);
+            if (tipo === 'testigo' && dibujandoTestigo) drawOnCanvas(e, ctxTestigo);
         }
 
-        document.querySelectorAll("canvas").forEach(canvas => {
-            const ctx = canvas.getContext("2d");
-            let dibujando = false;
-            
-            canvas.addEventListener("mousedown", (e) => {
-                dibujando = true;
-                ctx.beginPath();
-                ctx.moveTo(e.offsetX, e.offsetY);
-            });
-            
-            canvas.addEventListener("mousemove", (e) => {
-                if (dibujando) {
-                    ctx.lineTo(e.offsetX, e.offsetY);
-                    ctx.stroke();
-                }
-            });
-            
-            canvas.addEventListener("mouseup", () => dibujando = false);
-            canvas.addEventListener("mouseleave", () => dibujando = false);
-        });
-
-        // Función para mostrar imagen seleccionada
-        function mostrarImagen(input, num) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.id = "imagen" + num;
-                img.style.width = "100%";
-                img.style.maxWidth = "200px";
-                img.style.margin = "10px";
-                img.style.borderRadius = "5px";
-                img.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.3)";
-                
-                const deleteBtn = document.createElement("button");
-                deleteBtn.innerText = "Eliminar";
-                deleteBtn.classList.add("delete-btn");
-                deleteBtn.onclick = function() {
-                    eliminarImagen(img, deleteBtn);
-                };
-
-                const container = document.createElement("div");
-                container.appendChild(img);
-                container.appendChild(deleteBtn);
-                document.getElementById("evidenciasContainer").appendChild(container);
-            }
-            reader.readAsDataURL(file);
+        function endDrawing(tipo) {
+            if (tipo === 'jefe') dibujandoJefe = false;
+            if (tipo === 'empleado') dibujandoEmpleado = false;
+            if (tipo === 'testigo') dibujandoTestigo = false;
         }
 
-        // Función para eliminar una imagen
-        function eliminarImagen(img, btn) {
-            img.remove();
-            btn.remove();
+        function drawOnCanvas(e, ctx) {
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
         }
 
-        function descargarPDF() {
+        // Limpiar las firmas
+        function limpiarFirma(tipo) {
+            if (tipo === 'firmaJefe') ctxJefe.clearRect(0, 0, firmaJefeCanvas.width, firmaJefeCanvas.height);
+            if (tipo === 'firmaEmpleado') ctxEmpleado.clearRect(0, 0, firmaEmpleadoCanvas.width, firmaEmpleadoCanvas.height);
+            if (tipo === 'firmaTestigo') ctxTestigo.clearRect(0, 0, firmaTestigoCanvas.width, firmaTestigoCanvas.height);
+        }
+
+        // Obtener los datos del formulario y las firmas para generar el PDF
+        function guardarDatos() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
-            doc.setFontSize(12);
-            let yPosition = 10;
 
-            doc.text("Reporte de Trabajo", 10, yPosition);
-            yPosition += 10;
-            doc.text("Nombre de quien reporta: " + document.getElementById("quienReporta").value, 10, yPosition);
-            yPosition += 10;
-            doc.text("Nombre del empleado: " + document.getElementById("nombre").value, 10, yPosition);
-            yPosition += 10;
-            doc.text("Fecha y Hora: " + document.getElementById("fecha").value, 10, yPosition);
-
-            // Ajuste para la Descripción del trabajo
+            // Obtener los datos del formulario
+            const quienReporta = document.getElementById("quienReporta").value;
+            const nombreEmpleado = document.getElementById("nombreEmpleado").value;
+            const fecha = document.getElementById("fecha").value;
             const descripcion = document.getElementById("descripcion").value;
-            const lines = doc.splitTextToSize(descripcion, 180); // Ajusta el tamaño del texto a un ancho de 180mm
-            yPosition += 10;
-            doc.text(lines, 10, yPosition);
-            yPosition += lines.length * 6;
 
-            // Firmas
-            doc.text("Firma del Jefe Inmediato", 10, yPosition);
-            doc.addImage(document.getElementById("firmaSupervisor"), "PNG", 10, yPosition + 5, 50, 20);
-            yPosition += 30;
-            doc.text("Firma del Empleado", 10, yPosition);
-            doc.addImage(document.getElementById("firmaEmpleado"), "PNG", 10, yPosition + 5, 50, 20);
-            yPosition += 30;
+            // Agregar los datos al PDF
+            doc.text("Reporte de Trabajo", 10, 10);
+            doc.text("Nombre de quien reporta: " + quienReporta, 10, 20);
+            doc.text("Nombre del empleado: " + nombreEmpleado, 10, 30);
+            doc.text("Fecha y hora: " + fecha, 10, 40);
+            doc.text("Descripción: " + descripcion, 10, 50);
 
-            // Agregar imágenes de evidencia
-            const evidencias = document.querySelectorAll(".evidencia img");
-            evidencias.forEach((img, index) => {
-                if (index < 3) {
-                    doc.addImage(img.src, "PNG", 10, yPosition, 50, 50);
-                    yPosition += 60;
-                }
-            });
+            // Agregar las firmas al PDF
+            let yPos = 60;
+            if (firmaJefeCanvas.toDataURL()) {
+                doc.addImage(firmaJefeCanvas.toDataURL(), "PNG", 10, yPos, 60, 30);
+                yPos += 40;
+            }
+            if (firmaEmpleadoCanvas.toDataURL()) {
+                doc.addImage(firmaEmpleadoCanvas.toDataURL(), "PNG", 10, yPos, 60, 30);
+                yPos += 40;
+            }
+            if (firmaTestigoCanvas.toDataURL()) {
+                doc.addImage(firmaTestigoCanvas.toDataURL(), "PNG", 10, yPos, 60, 30);
+            }
 
+            // Descargar el PDF
             doc.save("reporte_trabajo.pdf");
         }
 
-        function finalizarReporte() {
-            alert("Reporte finalizado");
-            location.reload();
-        }
-    </script>
-</body>
-</html>
+        // Eventos para empezar y terminar de dibujar en el canvas
+        firmaJefeCanvas.addEventListener('mousedown', (e) => startDrawing(e, 'jefe'));
+        firmaJefeCanvas.addEventListener('mousemove', (e) => draw(e, 'jefe'));
+        firmaJefeCanvas.addEventListener('mouseup', () => endDrawing('jefe'));
+        firmaJefeCanvas.addEventListener('mouseleave', () => endDrawing('jefe'));
 
-            location.reload();
-        }
+        firmaEmpleadoCanvas.addEventListener('mousedown', (e) => startDrawing(e, 'empleado'));
+        firmaEmpleadoCanvas.addEventListener('mousemove', (e) => draw(e, 'empleado'));
+        firmaEmpleadoCanvas.addEventListener('mouseup', () => endDrawing('empleado'));
+        firmaEmpleadoCanvas.addEventListener('mouseleave', () => endDrawing('empleado'));
+
+        firmaTestigoCanvas.addEventListener('mousedown', (e) => startDrawing(e, 'testigo'));
+        firmaTestigoCanvas.addEventListener('mousemove', (e) => draw(e, 'testigo'));
+        firmaTestigoCanvas.addEventListener('mouseup', () => endDrawing('testigo'));
+        firmaTestigoCanvas.addEventListener('mouseleave', () => endDrawing('testigo'));
     </script>
 </body>
 </html>
