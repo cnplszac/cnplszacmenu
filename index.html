@@ -3,221 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Trabajo con Firma</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Humanizador de Texto IA (Lenguaje General)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos básicos */
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #ff9966, #ff5e62);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
         }
-        .container {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 20px;
+        /* Custom scrollbar for textareas */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #e0e0e0;
             border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            width: 80%;
-            max-width: 600px;
-            overflow-y: auto;
-            height: 100%;
         }
-        input, textarea, select {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            resize: none;
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
-            transition: 0.3s;
+        textarea::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
         }
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.7);
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
-        textarea { min-height: 100px; }
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            margin: 10px;
-            cursor: pointer;
-            background: #ff5e62;
-            border: none;
-            border-radius: 5px;
-            transition: all 0.3s;
-            color: white;
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none; /* Hidden by default */
+            font-weight: 600;
         }
-        button:hover {
-            background: #ff9966;
-            transform: scale(1.05);
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
-        canvas {
-            border: 2px solid white;
-            background: white;
-            touch-action: none;
-            border-radius: 5px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        .hidden { display: none; }
-        .evidencia {
-            margin-top: 20px;
-        }
-        .evidencia img {
-            width: 100%;
-            max-width: 200px;
-            margin: 10px;
-            border-radius: 5px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Reporte de Trabajo</h1>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
 
-        <!-- Formulario de Datos -->
-        <label>Nombre de quien reporta:</label>
-        <input type="text" id="quienReporta" placeholder="Ingrese nombre quien reporta">
-        
-        <label>Nombre del empleado:</label>
-        <input type="text" id="nombreEmpleado" placeholder="Ingrese nombre del empleado">
-        
-        <label>Fecha y Hora:</label>
-        <input type="datetime-local" id="fecha">
-        
-        <label>Descripción del trabajo:</label>
-        <textarea id="descripcion" placeholder="Ingrese detalles"></textarea>
-        
-        <!-- Canvas para Firmar -->
-        <h3>Firma del Jefe</h3>
-        <canvas id="firmaJefe" width="300" height="100"></canvas>
-        <button onclick="limpiarFirma('firmaJefe')">Limpiar Firma Jefe</button>
+    <!-- Message Box -->
+    <div id="messageBox" class="message-box"></div>
 
-        <h3>Firma del Empleado</h3>
-        <canvas id="firmaEmpleado" width="300" height="100"></canvas>
-        <button onclick="limpiarFirma('firmaEmpleado')">Limpiar Firma Empleado</button>
+    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-3xl md:p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center md:text-4xl">Humanizador de Texto IA</h1>
 
-        <h3>Firma del Testigo</h3>
-        <canvas id="firmaTestigo" width="300" height="100"></canvas>
-        <button onclick="limpiarFirma('firmaTestigo')">Limpiar Firma Testigo</button>
+        <div class="mb-6">
+            <label for="aiTextInput" class="block text-gray-700 text-lg font-semibold mb-2">Pega tu texto de IA aquí:</label>
+            <textarea id="aiTextInput" rows="10" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out resize-y text-gray-800" placeholder="Escribe o pega el texto generado por IA que quieras humanizar..."></textarea>
+        </div>
 
-        <!-- Botón para generar PDF -->
-        <button onclick="guardarDatos()">Generar Reporte PDF</button>
+        <div class="flex justify-center mb-6">
+            <button id="humanizeButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+                Humanizar Texto
+            </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden flex justify-center items-center mb-6">
+            <div class="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+            <span class="ml-3 text-blue-600 font-medium">Humanizando...</span>
+        </div>
+
+        <div class="mb-6">
+            <label for="humanizedOutput" class="block text-gray-700 text-lg font-semibold mb-2">Texto Humanizado:</label>
+            <textarea id="humanizedOutput" rows="10" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 resize-y" readonly placeholder="El texto humanizado aparecerá aquí..."></textarea>
+        </div>
+
+        <div class="text-center text-sm text-gray-500">
+            Desarrollado con ❤️ por tu asistente de IA
+        </div>
     </div>
 
-    <script>
-        // Variables para los canvas de las firmas
-        let firmaJefeCanvas = document.getElementById('firmaJefe');
-        let firmaEmpleadoCanvas = document.getElementById('firmaEmpleado');
-        let firmaTestigoCanvas = document.getElementById('firmaTestigo');
+    <script type="module">
+        // Get references to DOM elements
+        const aiTextInput = document.getElementById('aiTextInput');
+        const humanizeButton = document.getElementById('humanizeButton');
+        const humanizedOutput = document.getElementById('humanizedOutput');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const messageBox = document.getElementById('messageBox');
 
-        // Obtener los contextos de los canvas para dibujar
-        let ctxJefe = firmaJefeCanvas.getContext('2d');
-        let ctxEmpleado = firmaEmpleadoCanvas.getContext('2d');
-        let ctxTestigo = firmaTestigoCanvas.getContext('2d');
-
-        // Variables para controlar si estamos dibujando
-        let dibujandoJefe = false;
-        let dibujandoEmpleado = false;
-        let dibujandoTestigo = false;
-
-        // Funciones para dibujar las firmas
-        function startDrawing(e, tipo) {
-            if (tipo === 'jefe') dibujandoJefe = true;
-            if (tipo === 'empleado') dibujandoEmpleado = true;
-            if (tipo === 'testigo') dibujandoTestigo = true;
-            let ctx = tipo === 'jefe' ? ctxJefe : tipo === 'empleado' ? ctxEmpleado : ctxTestigo;
-            ctx.beginPath();
-            ctx.moveTo(e.offsetX, e.offsetY);
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {'success' | 'error'} type - The type of message (e.g., 'success', 'error').
+         */
+        function showMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.className = `message-box ${type}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000); // Hide after 3 seconds
         }
 
-        function draw(e, tipo) {
-            if (tipo === 'jefe' && dibujandoJefe) drawOnCanvas(e, ctxJefe);
-            if (tipo === 'empleado' && dibujandoEmpleado) drawOnCanvas(e, ctxEmpleado);
-            if (tipo === 'testigo' && dibujandoTestigo) drawOnCanvas(e, ctxTestigo);
-        }
+        // Event listener for the humanize button
+        humanizeButton.addEventListener('click', async () => {
+            const inputText = aiTextInput.value.trim();
 
-        function endDrawing(tipo) {
-            if (tipo === 'jefe') dibujandoJefe = false;
-            if (tipo === 'empleado') dibujandoEmpleado = false;
-            if (tipo === 'testigo') dibujandoTestigo = false;
-        }
-
-        function drawOnCanvas(e, ctx) {
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.stroke();
-        }
-
-        // Limpiar las firmas
-        function limpiarFirma(tipo) {
-            if (tipo === 'firmaJefe') ctxJefe.clearRect(0, 0, firmaJefeCanvas.width, firmaJefeCanvas.height);
-            if (tipo === 'firmaEmpleado') ctxEmpleado.clearRect(0, 0, firmaEmpleadoCanvas.width, firmaEmpleadoCanvas.height);
-            if (tipo === 'firmaTestigo') ctxTestigo.clearRect(0, 0, firmaTestigoCanvas.width, firmaTestigoCanvas.height);
-        }
-
-        // Obtener los datos del formulario y las firmas para generar el PDF
-        function guardarDatos() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            // Obtener los datos del formulario
-            const quienReporta = document.getElementById("quienReporta").value;
-            const nombreEmpleado = document.getElementById("nombreEmpleado").value;
-            const fecha = document.getElementById("fecha").value;
-            const descripcion = document.getElementById("descripcion").value;
-
-            // Agregar los datos al PDF
-            doc.text("Reporte de Trabajo", 10, 10);
-            doc.text("Nombre de quien reporta: " + quienReporta, 10, 20);
-            doc.text("Nombre del empleado: " + nombreEmpleado, 10, 30);
-            doc.text("Fecha y hora: " + fecha, 10, 40);
-            doc.text("Descripción: " + descripcion, 10, 50);
-
-            // Agregar las firmas al PDF
-            let yPos = 60;
-            if (firmaJefeCanvas.toDataURL()) {
-                doc.addImage(firmaJefeCanvas.toDataURL(), "PNG", 10, yPos, 60, 30);
-                yPos += 40;
-            }
-            if (firmaEmpleadoCanvas.toDataURL()) {
-                doc.addImage(firmaEmpleadoCanvas.toDataURL(), "PNG", 10, yPos, 60, 30);
-                yPos += 40;
-            }
-            if (firmaTestigoCanvas.toDataURL()) {
-                doc.addImage(firmaTestigoCanvas.toDataURL(), "PNG", 10, yPos, 60, 30);
+            if (!inputText) {
+                showMessage('Por favor, introduce el texto que deseas humanizar.', 'error');
+                return;
             }
 
-            // Descargar el PDF
-            doc.save("reporte_trabajo.pdf");
-        }
+            // Show loading indicator and disable button
+            loadingIndicator.classList.remove('hidden');
+            humanizeButton.disabled = true;
+            humanizedOutput.value = ''; // Clear previous output
 
-        // Eventos para empezar y terminar de dibujar en el canvas
-        firmaJefeCanvas.addEventListener('mousedown', (e) => startDrawing(e, 'jefe'));
-        firmaJefeCanvas.addEventListener('mousemove', (e) => draw(e, 'jefe'));
-        firmaJefeCanvas.addEventListener('mouseup', () => endDrawing('jefe'));
-        firmaJefeCanvas.addEventListener('mouseleave', () => endDrawing('jefe'));
+            try {
+                // Prepare the prompt for the AI model with enhanced instructions for third person and general language
+                const prompt = `Reescribe el siguiente texto para que suene **completamente natural, auténtico y escrito por un humano**. Elimina cualquier rastro de que fue generado por una IA.
 
-        firmaEmpleadoCanvas.addEventListener('mousedown', (e) => startDrawing(e, 'empleado'));
-        firmaEmpleadoCanvas.addEventListener('mousemove', (e) => draw(e, 'empleado'));
-        firmaEmpleadoCanvas.addEventListener('mouseup', () => endDrawing('empleado'));
-        firmaEmpleadoCanvas.addEventListener('mouseleave', () => endDrawing('empleado'));
+                **IMPORTANTE: Asegúrate de que el texto resultante esté siempre en tercera persona (él, ella, ellos, ellas, ello).**
 
-        firmaTestigoCanvas.addEventListener('mousedown', (e) => startDrawing(e, 'testigo'));
-        firmaTestigoCanvas.addEventListener('mousemove', (e) => draw(e, 'testigo'));
-        firmaTestigoCanvas.addEventListener('mouseup', () => endDrawing('testigo'));
-        firmaTestigoCanvas.addEventListener('mouseleave', () => endDrawing('testigo'));
+                **Además, evita el uso de vocabulario excesivamente técnico, jerga académica o lenguaje que suene muy específico de un ámbito estudiantil.** El objetivo es que el texto sea comprensible y natural para un público general, sin perder su profesionalismo cuando sea necesario.
+
+                Para lograr esto, por favor:
+                1.  **Varía la estructura y longitud de las oraciones** para evitar patrones predecibles.
+                2.  **Usa un lenguaje más conversacional e informal** cuando sea apropiado, como si una persona estuviera hablando o escribiendo.
+                3.  **Incorpora expresiones, modismos o giros de lenguaje comunes** que los humanos usarían.
+                4.  **Añade un toque personal o emocional** si el contexto lo permite, haciendo que el texto sea más relatable.
+                5.  **Evita la repetición de palabras o frases** y busca sinónimos naturales.
+                6.  **Asegúrate de que el flujo sea suave y coherente**, como una conversación fluida.
+                7.  **Mantiene el significado original** pero transforma radicalmente el estilo y el tono.
+
+                Texto a humanizar:
+                "${inputText}"
+
+                Texto humanizado:`;
+
+                // Construct the payload for the Gemini API
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+
+                // API key is handled by the Canvas environment, leave it empty
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                // Make the fetch call to the Gemini API
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                // Check for successful response and extract the text
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const humanizedText = result.candidates[0].content.parts[0].text;
+                    humanizedOutput.value = humanizedText;
+                    showMessage('Texto humanizado con éxito.', 'success');
+                } else {
+                    // Handle cases where the response structure is unexpected or content is missing
+                    console.error('Unexpected API response structure:', result);
+                    showMessage('Error al humanizar el texto. Inténtalo de nuevo.', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error al llamar a la API de Gemini:', error);
+                showMessage('Ocurrió un error. Por favor, revisa tu conexión o intenta de nuevo más tarde.', 'error');
+            } finally {
+                // Hide loading indicator and enable button
+                loadingIndicator.classList.add('hidden');
+                humanizeButton.disabled = false;
+            }
+        });
     </script>
 </body>
 </html>
